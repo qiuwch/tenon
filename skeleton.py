@@ -1,5 +1,5 @@
 '''
-filename = '/Users/qiuwch/Dropbox/Workspace/CG/blender/script/mesh/create_ball.py'
+Create mesh for skeleton generation
 exec(compile(open(filename).read(), filename, 'exec'))
 '''
 
