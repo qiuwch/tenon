@@ -10,48 +10,27 @@ if "camera" in locals():
 	imp.reload(skeleton)
 	imp.reload(background)
 	imp.reload(animate)
-	imp.reload(render)
+	imp.reload(_render)
 else:
 	import camera
 	import skeleton
 	import background
 	import animate
-	import render
+	import _render
 	import bpy
 
 # Add support for reload
+render = _render.Render()
+render.setOutputFolder('/Users/qiuwch/Downloads/renderOutput/')
+
+
+def demo():
+	setCamPos(0)
+	len = bpy.context.scene.frame_end
+	for id in range(len):
+		print('%d/%d' % (id, len))
+		animate.toFrame(id); render.renderFrame(id)
 
 def setup():
 	skeleton.createMarker()
 
-#--------------------
-# Testing / debugging
-#--------------------
-def renderNatural():
-	render.realistic()
-
-def renderBoundary():
-	render.boundary()
-
-def renderJoint():
-	render.joints()
-
-
-def main():
-	# for frameId in range(bpy.context.scene.frame_end):
-	for frameId in range(20):
-		animate._updateJointBall()
-		animate.flush()
-
-		animate.updateJointMarker()
-		print('Joint location is updated')
-
-		for theta in [0, 90, 180, 270]:
-			setCamPos(theta)
-			# Change to a new setting
-			# Set camera position
-			snapshot('f%d_loc%d' % (frameId, theta))
-
-			# Set frame location
-
-			# Invoke render
