@@ -1,2 +1,3 @@
 # README
-tenon.py is 
+This project warps blender python api for synthetic images rendering.
+

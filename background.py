@@ -3,5 +3,5 @@
 
 import bpy
 
-def setup_background(filename):
-	
+def setBackground(filename):
+	pass
