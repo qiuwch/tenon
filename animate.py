@@ -1,15 +1,11 @@
 import bpy
+from skeleton import selectedBones
 
-def animateToFrame(frameId):
-	bpy.context.scene.frame_current = frameId
-	# bpy.ops.anim.change_frame(frameId)
-
-
-def flush():
-	bpy.context.scene.update()
-	# This is important for the joint location to be updated
-
-def updateJointMarker():
+def toFrame(frameId):
+	print('Use frame set')
+	# bpy.context.scene.frame_current = frameId
+	# bpy.context.scene.update() # Update the frame index first
+	bpy.context.scene.frame_set(frameId)
 	obj = bpy.data.objects['human_model']
 
 	for bone in obj.pose.bones:
@@ -21,3 +17,7 @@ def updateJointMarker():
 	    objName = bone.name + 'Ball'
 	    ball = bpy.data.objects[objName]
 	    ball.location = poseBone.head
+	# bpy.ops.anim.change_frame(frameId)
+	# for frameId in range(bpy.context.scene.frame_end):
+
+
