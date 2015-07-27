@@ -28,6 +28,7 @@ class Render():
 
 		self._offAllOption()
 		self.renderLayer.use_ztransp = True
+		self.renderLayer.use_sky = True
 
 		self._layersOff()
 		for i in range(3):

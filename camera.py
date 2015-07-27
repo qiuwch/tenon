@@ -1,3 +1,4 @@
+
 def sceneCamera():
 	cam = bpy.data.objects.get('Camera')
 	if not cam:

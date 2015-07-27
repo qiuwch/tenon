@@ -23,13 +23,17 @@ else:
 render = _render.Render()
 render.setOutputFolder('/Users/qiuwch/Downloads/renderOutput/')
 
-
 def demo():
-	setCamPos(0)
 	len = bpy.context.scene.frame_end
-	for id in range(len):
-		print('%d/%d' % (id, len))
-		animate.toFrame(id); render.renderFrame(id)
+	combo = [[fid, bid] for fid in range(len) for bid in range(2)]
+
+	for (fid, bid) in combo:
+	# setCamPos(0)
+		background.setINRIA(bid)
+
+		animate.toFrame(fid); 
+		prefix = 'f%d_b%d' % (fid, bid)
+		render.renderFrame(prefix)
 
 def setup():
 	skeleton.createMarker()

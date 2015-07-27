@@ -5,6 +5,7 @@ import bpy
 import glob
 
 INRIA_DIR = '/Users/qiuwch/Dropbox/Workspace/CG/rendering/background/INRIA/'
+INRIA_SIZE = len(glob.glob(INRIA_DIR + '*.jpg'))
 
 def setBackground(filename):
 	realpath = bpy.path.abspath(filename)
@@ -13,6 +14,6 @@ def setBackground(filename):
 	bpy.data.textures['bg'].image = img;
 
 
-def INRIA_BG(id):
+def setINRIA(id):
 	files = glob.glob(INRIA_DIR + '*.jpg')
 	setBackground(files[id])
