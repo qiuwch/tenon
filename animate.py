@@ -1,7 +1,11 @@
 import bpy
 from skeleton import selectedBones
 
+
 def toFrame(frameId):
+	"""
+	Set the frame id of the scene
+	"""
 	# This way of set frame id is not working
 	# bpy.context.scene.frame_current = frameId
 	# bpy.context.scene.update() # Update the frame index first

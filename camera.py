@@ -1,5 +1,10 @@
+"""
+Control camera of the scene
+"""
 
 def sceneCamera():
+	""" Return camera of the scene """
+
 	cam = bpy.data.objects.get('Camera')
 	if not cam:
 		print('No camera')
@@ -7,6 +12,8 @@ def sceneCamera():
 
 
 def setCamPos(theta):
+	""" Set the position of scene camera """
+
 	# Change the camera position directly
 	import math
 	theta_rad = theta / 180.0 * math.pi

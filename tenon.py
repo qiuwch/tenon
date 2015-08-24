@@ -23,6 +23,9 @@ else:
 render = _render.Render()
 render.setOutputFolder('/Users/qiuwch/Downloads/renderOutput/')
 
+def realisticMode():
+	render.realisticMode()
+
 def demo():
 	len = bpy.context.scene.frame_end
 	combo = [[fid, bid] for fid in range(len) for bid in range(2)]
