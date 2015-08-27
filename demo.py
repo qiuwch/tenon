@@ -1,43 +1,47 @@
-'''
-exec(compile(open(filename).read(), filename, 'exec'))
-/Users/qiuwch/Dropbox/Workspace/CG/rendering/tenon/tenon.py
-'''
-import sys
-sys.path.append('/Users/qiuwch/Dropbox/Workspace/CG/rendering/tenon/')
-if "camera" in locals():
-	import imp
-	imp.reload(camera)
-	imp.reload(skeleton)
-	imp.reload(background)
-	imp.reload(animate)
-	imp.reload(_render)
-else:
-	import camera
-	import skeleton
-	import background
-	import animate
-	import _render
-	import bpy
+''' Include common tasks provided in tenon '''
+import _render
+import bpy
+import background
+import animate
+import skeleton
 
 # Add support for reload
-render = _render.Render()
-render.setOutputFolder('/Users/qiuwch/Downloads/renderOutput/')
+
+version = 'v2'
 
 def realisticMode():
+	''' Set the render to realistic mode '''
 	render.realisticMode()
 
-def demo():
-	len = bpy.context.scene.frame_end
-	combo = [[fid, bid] for fid in range(len) for bid in range(2)]
+def batchRender(num):
+	''' Render number of frames '''
+	# TODO: make verbose output fresh during execution?
+	len = min(num, bpy.context.scene.frame_end)
 
-	for (fid, bid) in combo:
-	# setCamPos(0)
+	bid = 1 # bid is background id, should be randomly chosen
+	print('Generating image')
+	for fid in range(len):
+		# fid is frame id
+		# setCamPos(0)
 		background.setINRIA(bid)
 
 		animate.toFrame(fid); 
 		prefix = 'f%d_b%d' % (fid, bid)
-		render.renderFrame(prefix)
+		# prefix = str(prefix)
+		# render current frames to image
+		# output to files
 
-def setup():
+		render.realisticMode()
+		filename = prefix + '-real.png'
+		render.write(filename)
+		print(bpy.path.abspath(filename))
+
+		render.boundaryMode()
+		render.write(prefix + '-edge.png')
+		render.jointsMode()
+		render.write(prefix + '-joint.png')
+
+
+def setupSkeleton():
 	skeleton.createMarker()
 
