@@ -1,15 +1,20 @@
 import bpy
 import os
-from init import RENDER_OUTPUT_DIR
-
-render = _render.Render()
+from tenon.config import RENDER_OUTPUT_DIR
 
 class Render():
 	# Options for internal render of blender
 	def __init__(self):
 		self.outputFolder = bpy.path.abspath(RENDER_OUTPUT_DIR)
 		self.scene = bpy.data.scenes['Scene']
+
+		# Control render config
 		self.renderLayer = self.scene.render.layers['RenderLayer']
+
+		# Control which layer is visible, TODO: what is the difference?
+		self.sceneLayers = self.scene.layers
+		self.renderLayers = self.scene.render.layers['RenderLayer'].layers
+		self.version = 'v2'
 
 	def setOutputFolder(self, outputFolder):
 		''' Set the output folder of render '''
@@ -21,13 +26,15 @@ class Render():
 		self.renderLayer.use_freestyle = switch
 
 	def boundaryMode(self):
+		''' Only display boundary of the object '''
 		self._switchFreestyle(True)
 
 		self._layersOff()
 		for i in range(3):
-			self.renderLayer.layers[i] = True
+			self.sceneLayers[i] = True
 
 	def realisticMode(self):
+		''' Display the realistic rendering '''
 		self._switchFreestyle(False)
 
 		self._offAllOption()
@@ -36,16 +43,17 @@ class Render():
 
 		self._layersOff()
 		for i in range(3):
-			self.renderLayer.layers[i] = True
+			self.sceneLayers[i] = True
 
 	def jointsMode(self):
+		''' Only display the joint locations '''
 		self._switchFreestyle(False)
 
 		self._offAllOption()
 		self.renderLayer.use_solid = True
 
 		self._layersOff()
-		self.renderLayer.layers[3] = True
+		self.sceneLayers[3] = True
 
 	def write(self, filename):
 		if not os.path.exists(self.outputFolder):
@@ -79,6 +87,7 @@ class Render():
 
 	def _layersOff(self):
 		for i in range(20):
-			self.renderLayer.layers[i] = False
+			self.sceneLayers[i] = False
 
+render = Render()
 
