@@ -1,5 +1,5 @@
 import bpy
-from skeleton import selectedBones
+from tenon.skeleton import selectedBones
 
 
 def toFrame(frameId):

@@ -38,11 +38,11 @@ selectedBones = {
 
 
 def createMarker():
-    # Create an UV sphere for each joint, then assign the material to the joints.
+    ''' Create an UV sphere for each joint, then assign the material to the joints. '''
     obj = bpy.data.objects['human_model']
 
     for bone in obj.pose.bones:
-        if not bone.name in selectedBones.keys():
+        if not bone.name in selectedBones.keys(): # Ignore not related joints
             continue
 
         poseBone = bone

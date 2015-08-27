@@ -3,7 +3,7 @@
 
 import bpy
 import glob
-from init import INRIA_DIR
+from tenon.config import INRIA_DIR
 
 INRIA_SIZE = len(glob.glob(INRIA_DIR + '*.jpg'))
 

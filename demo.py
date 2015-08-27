@@ -1,9 +1,9 @@
 ''' Include common tasks provided in tenon '''
-import _render
+from tenon.render import render
 import bpy
-import background
-import animate
-import skeleton
+import tenon.background
+import tenon.animate
+import tenon.skeleton
 
 # Add support for reload
 
@@ -23,9 +23,9 @@ def batchRender(num):
 	for fid in range(len):
 		# fid is frame id
 		# setCamPos(0)
-		background.setINRIA(bid)
+		tenon.background.setINRIA(bid)
 
-		animate.toFrame(fid); 
+		tenon.animate.toFrame(fid); 
 		prefix = 'f%d_b%d' % (fid, bid)
 		# prefix = str(prefix)
 		# render current frames to image
@@ -43,5 +43,5 @@ def batchRender(num):
 
 
 def setupSkeleton():
-	skeleton.createMarker()
+	tenon.skeleton.createMarker()
 
