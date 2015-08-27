@@ -1,3 +1,4 @@
+import bpy
 '''
 Create mesh for skeleton generation
 exec(compile(open(filename).read(), filename, 'exec'))
