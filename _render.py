@@ -1,14 +1,18 @@
 import bpy
 import os
+from init import RENDER_OUTPUT_DIR
+
+render = _render.Render()
 
 class Render():
 	# Options for internal render of blender
 	def __init__(self):
-		self.outputFolder = bpy.path.abspath('//')
+		self.outputFolder = bpy.path.abspath(RENDER_OUTPUT_DIR)
 		self.scene = bpy.data.scenes['Scene']
 		self.renderLayer = self.scene.render.layers['RenderLayer']
 
 	def setOutputFolder(self, outputFolder):
+		''' Set the output folder of render '''
 		self.outputFolder = bpy.path.abspath(outputFolder)
 
 	def _switchFreestyle(self, switch):
@@ -51,6 +55,7 @@ class Render():
 		bpy.ops.render.render(write_still=True)
 
 	def renderFrame(self, prefix):
+		''' Render foreground region, joint location and realistic image '''
 		prefix = str(prefix)
 		# render current frames to image
 		# output to files

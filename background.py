@@ -3,14 +3,14 @@
 
 import bpy
 import glob
+from init import INRIA_DIR
 
-INRIA_DIR = '/Users/qiuwch/Dropbox/Workspace/CG/rendering/background/INRIA/'
 INRIA_SIZE = len(glob.glob(INRIA_DIR + '*.jpg'))
 
 def setBackground(filename):
 	""" Set background of the scene"""
-	realpath = bpy.path.abspath(filename)
-	img = bpy.data.images.load(realpath); 
+	abspath = bpy.path.abspath(filename)
+	img = bpy.data.images.load(abspath); 
 	# bpy.data.images['Beautiful-Garden-HD-Wallpapers.jpg'];
 	bpy.data.textures['bg'].image = img;
 

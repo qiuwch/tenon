@@ -1,5 +1,12 @@
 # Include the directory of this script, to make it usable as a package.
 import sys
-sys.path.append('/Users/qiuwch/Dropbox/Workspace/CG/rendering/tenon/')
+import imp
+PWD = '/Users/qiuwch/Dropbox/Workspace/research/tenon'
+INRIA_DIR = '/q/data/INRIA/'
+RENDER_OUTPUT_DIR = '/q/cache/render_output/'
+sys.path.append(PWD)
+def r(v):
+    imp.reload(v)
+
 
 
