@@ -1,6 +1,7 @@
 """
 Control camera of the scene
 """
+import bpy
 
 def sceneCamera():
 	""" Return camera of the scene """
