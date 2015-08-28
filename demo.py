@@ -35,7 +35,7 @@ def batchRender(num):
 		tenon.animate.toFrame(fid); 
 		# prefix = 'f%d_b%d' % (fid, bid)
 		prefix = '%04d' % ii
-		fInfo.write('%04d, %s, %d, %d' % (ii, prefix, fid, bid))
+		fInfo.write('%04d, %s, %d, %d\n' % (ii, prefix, fid, bid))
 
 		# prefix = str(prefix)
 
