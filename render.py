@@ -25,6 +25,10 @@ class Render():
 		self._offAllOption()
 		self.renderLayer.use_freestyle = switch
 
+	def depthMode(self):
+		''' Render depth of the scene '''
+		pass # Not implemented yet
+
 	def boundaryMode(self):
 		''' Only display boundary of the object '''
 		self._switchFreestyle(True)
