@@ -14,7 +14,7 @@ class Render():
 		# Control which layer is visible, TODO: what is the difference?
 		self.sceneLayers = self.scene.layers
 		self.renderLayers = self.scene.render.layers['RenderLayer'].layers
-		self.version = 'v2'
+		self.version = 'v3'
 
 	def setOutputFolder(self, outputFolder):
 		''' Set the output folder of render '''
@@ -32,6 +32,7 @@ class Render():
 		self._layersOff()
 		for i in range(3):
 			self.sceneLayers[i] = True
+			self.renderLayers[i] = True
 
 	def realisticMode(self):
 		''' Display the realistic rendering '''
@@ -44,6 +45,7 @@ class Render():
 		self._layersOff()
 		for i in range(3):
 			self.sceneLayers[i] = True
+			self.renderLayers[i] = True
 
 	def jointsMode(self):
 		''' Only display the joint locations '''
@@ -54,6 +56,7 @@ class Render():
 
 		self._layersOff()
 		self.sceneLayers[3] = True
+		self.renderLayers[3] = True
 
 	def write(self, filename):
 		if not os.path.exists(self.outputFolder):

@@ -8,5 +8,5 @@ sys.path.append(PWD)
 def r(v):
     imp.reload(v)
 
-
+import tenon.demo
 
