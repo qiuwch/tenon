@@ -25,12 +25,33 @@ class Render():
 		self._offAllOption()
 		self.renderLayer.use_freestyle = switch
 
+
+	def _enableDepth(self):
+		# bpy.context.scene.use_nodes = True
+		tree = bpy.context.scene.node_tree
+		depthNode = tree.nodes.get('Invert')
+		compositeNode = tree.nodes.get('Composite')
+
+		links = tree.links
+		links.new(depthNode.outputs[0], compositeNode.inputs[0])
+
+	def _disableDepth(self):
+		# bpy.context.scene.use_nodes = True
+		tree = bpy.context.scene.node_tree
+		renderLayersNode = tree.nodes.get('Render Layers')
+		compositeNode = tree.nodes.get('Composite')
+
+		links = tree.links
+		links.new(renderLayersNode.outputs[0], compositeNode.inputs[0])
+
 	def depthMode(self):
-		''' Render depth of the scene '''
-		pass # Not implemented yet
+		''' Render depth of the scene. To use this function, the scene needs to be pre-configured. '''
+		self.realisticMode()
+		self._enableDepth()
 
 	def boundaryMode(self):
 		''' Only display boundary of the object '''
+		self._disableDepth()
 		self._switchFreestyle(True)
 
 		self._layersOff()
@@ -40,6 +61,7 @@ class Render():
 
 	def realisticMode(self):
 		''' Display the realistic rendering '''
+		self._disableDepth()
 		self._switchFreestyle(False)
 
 		self._offAllOption()
@@ -53,6 +75,7 @@ class Render():
 
 	def jointsMode(self):
 		''' Only display the joint locations '''
+		self._disableDepth()
 		self._switchFreestyle(False)
 
 		self._offAllOption()
@@ -69,17 +92,17 @@ class Render():
 		self.scene.render.filepath = self.outputFolder + filename
 		bpy.ops.render.render(write_still=True)
 
-	def renderFrame(self, prefix):
-		''' Render foreground region, joint location and realistic image '''
-		prefix = str(prefix)
-		# render current frames to image
-		# output to files
-		self.realisticMode()
-		self.write(prefix + '-real.png')
-		self.boundaryMode()
-		self.write(prefix + '-edge.png')
-		self.jointsMode()
-		self.write(prefix + '-joint.png')
+	# def renderFrame(self, prefix):
+	# 	''' Render foreground region, joint location and realistic image '''
+	# 	prefix = str(prefix)
+	# 	# render current frames to image
+	# 	# output to files
+	# 	self.realisticMode()
+	# 	self.write(prefix + '-real.png')
+	# 	self.boundaryMode()
+	# 	self.write(prefix + '-edge.png')
+	# 	self.jointsMode()
+	# 	self.write(prefix + '-joint.png')
 
 	def _offAllOption(self):
 		self.renderLayer.use_zmask = False
