@@ -1,7 +1,8 @@
 function crop_imgs()
     % Crop the image, to make it suitable for LSP format
     clear all;
-    origDir = '/q/cache/render_output/8.31_v1/';
+    origDir = '/q/cache/render_output/9.7_v1/';
+    disp(origDir);
 
     num = 40;
 
@@ -21,7 +22,8 @@ function crop_imgs()
     %     fgIdx = fg;
         fgIdx = fgBBmask;
 
-        for type = {'imgs', 'depth', 'skel'}
+        % for type = {'imgs', 'depth', 'skel'}
+        for type = {'imgs'}
             type = type{1};
             imfname = sprintf([origDir type '/%04d.png'], i);
             im = imread(imfname);
@@ -35,10 +37,19 @@ function crop_imgs()
 end
 
 function crop = bb_crop(im, bb)
-    crop = im(bb(1):bb(2), bb(3):bb(4), :);
+    h = bb(2) - bb(1); w = bb(4) - bb(3);
+    h = max(h, w); w = max(h, w);
+    imh = size(im, 1); imw = size(im, 2);
+    
+    ratio = 0.1;
+    t = max(uint32(bb(1) - ratio * h), 1);
+    b = min(uint32(bb(2) + ratio * h), imh);
+    l = max(uint32(bb(3) - ratio * w), 1);
+    r = min(uint32(bb(4) + ratio * w), imw);
+    crop = im(t:b, l:r, :);
     sz = size(crop(:,:,1));
     if sz(1) > sz(2) % height > width
-        crop = imresize(crop, 150.0 / sz(1));
+        crop = imresize(crop, 150.0 / sz(1)); % no interporlation for joint labeling
     else
         crop = imresize(crop, 150.0 / sz(2));
     end
