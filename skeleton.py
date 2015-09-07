@@ -1,4 +1,6 @@
 import bpy
+import bpy_extras
+
 '''
 Create mesh for skeleton generation
 exec(compile(open(filename).read(), filename, 'exec'))
@@ -36,6 +38,23 @@ selectedBones = {
     'neck': [0, 0, 0]
 }
 
+def world2camera(location):
+    ''' Map the 3d coordinate to camera coordinate
+    This is an excellent reference: http://blender.stackexchange.com/questions/882/how-to-find-image-coordinates-of-the-rendered-vertex 
+    '''
+
+    scene = bpy.context.scene
+    cam = bpy.data.objects.get('Camera')
+    co_2d = bpy_extras.object_utils.world_to_camera_view(scene, cam, location)
+    # co_2d is normalized device coordinate (NDC)
+
+    # If you want pixel coords
+    render_scale = scene.render.resolution_percentage / 100
+    render_size = (
+            int(scene.render.resolution_x * render_scale),
+            int(scene.render.resolution_y * render_scale),
+            )
+    return (round(co_2d.x * render_size[0]), round((1-co_2d.y) * render_size[1]))
 
 def createMarker():
     ''' Create an UV sphere for each joint, then assign the material to the joints. '''

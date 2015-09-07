@@ -16,7 +16,10 @@ def realisticMode():
 def batchRender(num):
 	''' Render number of frames '''
 	infoFilename = render.outputFolder + '/info.csv'
+	jointFilename = render.outputFolder + '/joint.csv'
 	fInfo = open(infoFilename, 'w')
+	fJoint = open(jointFilename, 'w')
+
 	# TODO: make verbose output fresh during execution?
 	nImg = min(num, bpy.context.scene.frame_end)
 
@@ -24,31 +27,45 @@ def batchRender(num):
 	print('Generating image')
 
 	fInfo.write('imageId, finImgame, frameId, background\n')
-	seq = range(0, 200, 5)
+
+	# seq = range(0, 200, 5)
+	seq = range(0, 250)
 	seq = seq[0:nImg]
+
+
 	for ii in range(len(seq)):
 		fid = seq[ii]
 		# fid is frame id
 		# setCamPos(0)
 		tenon.background.setINRIA(bid)
 
-		tenon.animate.toFrame(fid); 
+		joints = tenon.animate.toFrame(fid);
+		print(len(joints))
+		for j in joints:
+			fJoint.write(str(j[0]) + ',' + str(j[1]) + ',')
+		fJoint.write('\n')
+
 		# prefix = 'f%d_b%d' % (fid, bid)
 		prefix = '%04d' % ii
 		fInfo.write('%04d, %s, %d, %d\n' % (ii, prefix, fid, bid))
 
 		# prefix = str(prefix)
 
+		print(render.version)
 		render.realisticMode()
 		render.write('/imgs/' + prefix + '.png')
 
 		render.boundaryMode()
-		render.write('/mask/' + prefix + '.png')
+		render.write('/edge/' + prefix + '.png')
 		
-		render.jointsMode()
-		render.write('/skel/' + prefix + '.png')
+		# render.jointsMode()
+		# render.write('/skel/' + prefix + '.png')
+
+		render.depthMode()
+		render.write('/depth/' + prefix + '.png')
 
 	fInfo.close()
+	fJoint.close()
 
 
 def setupSkeleton():

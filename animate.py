@@ -1,5 +1,6 @@
 import bpy
-from tenon.skeleton import selectedBones
+from tenon.skeleton import selectedBones, world2camera
+
 
 
 def toFrame(frameId):
@@ -12,17 +13,24 @@ def toFrame(frameId):
 
 	bpy.context.scene.frame_set(frameId)
 	obj = bpy.data.objects['human_model']
+	# joints = {}
+	joints = []
 
 	for bone in obj.pose.bones:
 	    if not bone.name in selectedBones.keys():
 	        continue
 
+	    print(bone.name)
 	    poseBone = bone
 
-	    objName = bone.name + 'Ball'
-	    ball = bpy.data.objects[objName]
-	    ball.location = poseBone.head
-	    
+	    # objName = bone.name + 'Ball'
+	    # ball = bpy.data.objects[objName]
+
+	    # ball.location = poseBone.head
+	    # joints[bone.name] = world2camera(poseBone.head)
+	    joints.append(world2camera(poseBone.head))
+
+	return joints	    
 	# bpy.ops.anim.change_frame(frameId)
 	# for frameId in range(bpy.context.scene.frame_end):
 
