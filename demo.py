@@ -4,8 +4,9 @@ import bpy
 import tenon.background
 import tenon.animate
 import tenon.skeleton
+from tenon.skeleton import selectedBones
 
-# Add support for reload
+# TODO: Add support for reload
 
 version = 'v2'
 
@@ -16,9 +17,18 @@ def realisticMode():
 def batchRender(num):
 	''' Render number of frames '''
 	infoFilename = render.outputFolder + '/info.csv'
-	jointFilename = render.outputFolder + '/joint.csv'
+	jointFilename = render.outputFolder + '/joint-PC.csv' # person centric annotation
 	fInfo = open(infoFilename, 'w')
 	fJoint = open(jointFilename, 'w')
+
+	finfoTitle = 'ImageId, finImgame, frameId, background'
+	fInfo.write(finfoTitle + '\n')
+	keys = []
+	for v in selectedBones.keys():
+		keys += [v + '.x', v + '.y'] # x, y coordinates for this joint
+
+	jointTitle = 'ImageId, ' + ','.join(keys)
+	fJoint.write(jointTitle + '\n') # Todo, add the id of joints
 
 	# TODO: make verbose output fresh during execution?
 	nImg = min(num, bpy.context.scene.frame_end)
@@ -26,12 +36,10 @@ def batchRender(num):
 	bid = 1 # bid is background id, should be randomly chosen
 	print('Generating image')
 
-	fInfo.write('imageId, finImgame, frameId, background\n')
 
 	# seq = range(0, 200, 5)
 	seq = range(0, 250)
 	seq = seq[0:nImg]
-
 
 	for ii in range(len(seq)):
 		fid = seq[ii]
@@ -41,15 +49,11 @@ def batchRender(num):
 
 		joints = tenon.animate.toFrame(fid);
 		print(len(joints))
+
 		for j in joints:
 			fJoint.write(str(j[0]) + ',' + str(j[1]) + ',')
 		fJoint.write('\n')
-
-		# prefix = 'f%d_b%d' % (fid, bid)
 		prefix = '%04d' % ii
-		fInfo.write('%04d, %s, %d, %d\n' % (ii, prefix, fid, bid))
-
-		# prefix = str(prefix)
 
 		print(render.version)
 		render.realisticMode()
@@ -58,11 +62,21 @@ def batchRender(num):
 		render.boundaryMode()
 		render.write('/edge/' + prefix + '.png')
 		
-		# render.jointsMode()
-		# render.write('/skel/' + prefix + '.png')
-
 		render.depthMode()
 		render.write('/depth/' + prefix + '.png')
+
+		# Write file information
+		fileinfo = '%04d, %s, %d, %d' % (ii, prefix, fid, bid)
+		fInfo.write(fileinfo + '\n')
+
+		# Write PC joint annotation
+		b = []
+		for j in joints:
+			b = b + list(j)
+		jointinfo = ','.join(map(str, b))
+		jointinfo = '%04d, ' % ii + jointinfo
+		fJoint.write(jointinfo + '\n')
+
 
 	fInfo.close()
 	fJoint.close()
