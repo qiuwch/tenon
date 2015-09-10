@@ -5,30 +5,34 @@ function crop_imgs()
     anno = csvread([origDir 'joint-PC-MATLAB.csv']);
     joints = zeros(2, size(anno,2)/2, size(anno,1));
 
-    for fileid = 0:(size(anno, 1)-1)
+    for fileid = 1:size(anno, 1)
         % Get annotation
-        X = anno(fileid+1, 1:2:end);
-        Y = anno(fileid+1, 2:2:end);
+        X = anno(fileid, 1:2:end);
+        Y = anno(fileid, 2:2:end);
 
         % Get mask
-        depth_fname = sprintf([origDir 'depth/%04d.png'], fileid);
+        depth_fname = sprintf([origDir 'depth/im%04d.png'], fileid);
         depth = imread(depth_fname);
 
         % for type = {'imgs', 'depth', 'skel'}
         for type = {'imgs'}
             type = type{1};
-            imfname = sprintf([origDir type '/%04d.png'], fileid);
+            imfname = sprintf([origDir type '/im%04d.png'], fileid);
             im = imread(imfname);
             im = im2double(im);
+            
             [crop, U, V] = crop_img(im, depth, X, Y);
-
+            % debug
+            % imshow(im); hold on; plot(X, Y, '*'); pause;
+            % imshow(crop); hold on; plot(U, V, '*'); pause;
+            
             % Save cropped image
-            crop_imfname = sprintf([cropDir type '/%04d.png'], fileid);
+            crop_imfname = sprintf([cropDir type '/im%04d.png'], fileid);
             imwrite(crop, crop_imfname);
 
             % Save annotation
-            joints(1, :, fileid+1) = U;
-            joints(2, :, fileid+1) = V;
+            joints(1, :, fileid) = U;
+            joints(2, :, fileid) = V;
         end
     end
     save([cropDir 'joints.mat'], 'joints');
