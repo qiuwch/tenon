@@ -1,7 +1,8 @@
 import bpy
-from tenon.skeleton import selectedBones, world2camera
+from tenon.skeleton import world2camera
+from tenon.config import selectedBones
 
-
+# TODO, fix selected bone
 
 def toFrame(frameId):
 	"""
@@ -19,7 +20,10 @@ def toFrame(frameId):
 	# for bone in obj.pose.bones:
 	#	if not bone.name in selectedBones.keys():
 	#         continue
-	for boneName in selectedBones.keys():
+	for bone in selectedBones:
+		boneName = bone[0]
+		tailOrHead = bone[1]
+
 		bone = obj.pose.bones[boneName]
 
 		poseBone = bone
@@ -29,7 +33,13 @@ def toFrame(frameId):
 
 		# ball.location = poseBone.head
 		# joints[bone.name] = world2camera(poseBone.head)
-		joints.append(world2camera(poseBone.head))
+		if tailOrHead == 'head':
+			jointLocation = poseBone.head
+		elif tailOrHead == 'tail':
+			jointLocation = poseBone.tail
+
+		joints.append(world2camera(jointLocation))
+
 
 	return joints		
 	# bpy.ops.anim.change_frame(frameId)

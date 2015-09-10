@@ -4,8 +4,7 @@ import bpy
 import tenon.background
 import tenon.animate
 import tenon.skeleton
-from tenon.skeleton import selectedBones
-from tenon.config import JOINT_FILENAME
+from tenon.config import JOINT_FILENAME, selectedBones
 
 # TODO: Add support for reload
 
@@ -25,8 +24,9 @@ def batchRender(num):
 	finfoTitle = 'ImageId, finImgame, frameId, background'
 	fInfo.write(finfoTitle + '\n')
 	keys = []
-	for v in selectedBones.keys():
-		keys += [v + '.x', v + '.y'] # x, y coordinates for this joint
+	for v in selectedBones:
+		keys += [v[0] + '.x', v[0] + '.y']
+	# x, y coordinates for this joint
 
 	jointTitle = 'ImageId,' + ','.join(keys) # No space is allowed
 	fJoint.write(jointTitle + '\n') # Todo, add the id of joints
