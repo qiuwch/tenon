@@ -22,7 +22,6 @@ def toFrame(frameId):
 	for boneName in selectedBones.keys():
 		bone = obj.pose.bones[boneName]
 
-		print(bone.name)
 		poseBone = bone
 
 		# objName = bone.name + 'Ball'

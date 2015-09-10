@@ -4,7 +4,9 @@ import bpy
 import tenon.background
 import tenon.animate
 import tenon.skeleton
+import tenon.convert
 from tenon.skeleton import selectedBones
+from tenon.config import JOINT_FILENAME
 
 # TODO: Add support for reload
 
@@ -17,7 +19,7 @@ def realisticMode():
 def batchRender(num):
 	''' Render number of frames '''
 	infoFilename = render.outputFolder + '/info.csv'
-	jointFilename = render.outputFolder + '/joint-PC.csv' # person centric annotation
+	jointFilename = JOINT_FILENAME
 	fInfo = open(infoFilename, 'w')
 	fJoint = open(jointFilename, 'w')
 
@@ -27,7 +29,7 @@ def batchRender(num):
 	for v in selectedBones.keys():
 		keys += [v + '.x', v + '.y'] # x, y coordinates for this joint
 
-	jointTitle = 'ImageId, ' + ','.join(keys)
+	jointTitle = 'ImageId,' + ','.join(keys) # No space is allowed
 	fJoint.write(jointTitle + '\n') # Todo, add the id of joints
 
 	# TODO: make verbose output fresh during execution?
@@ -48,14 +50,8 @@ def batchRender(num):
 		tenon.background.setINRIA(bid)
 
 		joints = tenon.animate.toFrame(fid);
-		print(len(joints))
-
-		for j in joints:
-			fJoint.write(str(j[0]) + ',' + str(j[1]) + ',')
-		fJoint.write('\n')
 		prefix = '%04d' % ii
 
-		print(render.version)
 		render.realisticMode()
 		render.write('/imgs/' + prefix + '.png')
 
@@ -66,7 +62,7 @@ def batchRender(num):
 		render.write('/depth/' + prefix + '.png')
 
 		# Write file information
-		fileinfo = '%04d, %s, %d, %d' % (ii, prefix, fid, bid)
+		fileinfo = '%04d,%s,%d,%d' % (ii, prefix, fid, bid)
 		fInfo.write(fileinfo + '\n')
 
 		# Write PC joint annotation
@@ -74,7 +70,7 @@ def batchRender(num):
 		for j in joints:
 			b = b + list(j)
 		jointinfo = ','.join(map(str, b))
-		jointinfo = '%04d, ' % ii + jointinfo
+		jointinfo = '%04d,' % ii + jointinfo
 		fJoint.write(jointinfo + '\n')
 
 
