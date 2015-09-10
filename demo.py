@@ -4,7 +4,6 @@ import bpy
 import tenon.background
 import tenon.animate
 import tenon.skeleton
-import tenon.convert
 from tenon.skeleton import selectedBones
 from tenon.config import JOINT_FILENAME
 
@@ -50,16 +49,17 @@ def batchRender(num):
 		tenon.background.setINRIA(bid)
 
 		joints = tenon.animate.toFrame(fid);
-		prefix = '%04d' % ii
+		prefix = 'im%04d' % (ii+1) # Let it start from 1
 
 		render.realisticMode()
 		render.write('/imgs/' + prefix + '.png')
 
-		render.boundaryMode()
-		render.write('/edge/' + prefix + '.png')
-		
 		render.depthMode()
 		render.write('/depth/' + prefix + '.png')
+
+		# Disabled
+		# render.boundaryMode()
+		# render.write('/edge/' + prefix + '.png')
 
 		# Write file information
 		fileinfo = '%04d,%s,%d,%d' % (ii, prefix, fid, bid)
