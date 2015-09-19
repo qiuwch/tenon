@@ -1,3 +1,4 @@
+# Script to manipulate human pose
 import bpy
 def rest():
 	""" Set the human body to rest pose """

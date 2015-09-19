@@ -1,6 +1,6 @@
+# Script to change clothes of makehuman model.
 import bpy
 import glob
-# Script to change clothes of makehuman model.
 
 class ClothType:
 	Jeans, TShirt, LongTShirt, Shirt = range(4)
@@ -23,7 +23,4 @@ def changeClothById(clothType, id):
 
 def changeClothByFilename(clothType, filename):
 	textureImg = bpy.data.images[textureConfig[clothType]]
-	# tshirt = bpy.data.objects['human_model:tshirt02']
-	# tshirt.material_slots['human_model:tshirt02:tshirt02Material']
-
 	textureImg.filepath = filename

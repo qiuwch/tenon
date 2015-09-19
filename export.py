@@ -1,6 +1,7 @@
+# Utility script to export 3d joint location to txt file
 import bpy
-# from skeleton import selectedBones
 
+# TODO: maybe merge this with config.selectedBones
 exportBones = {
     'shin.fk.L': 'head',
     'shin.fk.R': 'head',

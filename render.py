@@ -86,6 +86,7 @@ class Render():
 		self.renderLayers[3] = True
 
 	def write(self, filename):
+		''' Write current scene to the filename '''
 		if not os.path.exists(self.outputFolder):
 			os.mkdir(self.outputFolder)
 
@@ -95,18 +96,6 @@ class Render():
 		# TODO: improve the logging system
 		print(self.scene.render.filepath)
 		bpy.ops.render.render(write_still=True)
-
-	# def renderFrame(self, prefix):
-	# 	''' Render foreground region, joint location and realistic image '''
-	# 	prefix = str(prefix)
-	# 	# render current frames to image
-	# 	# output to files
-	# 	self.realisticMode()
-	# 	self.write(prefix + '-real.png')
-	# 	self.boundaryMode()
-	# 	self.write(prefix + '-edge.png')
-	# 	self.jointsMode()
-	# 	self.write(prefix + '-joint.png')
 
 	def _offAllOption(self):
 		self.renderLayer.use_zmask = False

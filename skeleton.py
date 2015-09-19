@@ -1,26 +1,8 @@
+# Deprecated: Create mesh for skeleton generation
+# TODO: rewrite this script.
 import bpy
 import bpy_extras
 
-'''
-Create mesh for skeleton generation
-exec(compile(open(filename).read(), filename, 'exec'))
-'''
-
-# selectedBones = {
-#   'head': [0, 0, 1],
-#   'chest': [0, 1, 0],
-#   'neck': [0, 1, 1],
-#   'hand.R': [1, 0, 0],
-#   'hand.L': [1, 0, 1],
-#   'ankle.L': [1, 1, 0],
-#   'ankle.R': [1, 1, 1],
-#   'elbow.link.R': [0, 0, 0.5],
-#   'elbow.link.L': [0, 0.5, 0],
-#   'hipside.L': [0, 0.5, 0.5],
-#   'hipside.R': [0.5, 0, 0],
-#   'knee.link.R': [0.5, 0, 0.5],
-#   'knee.link.L': [0.5, 0.5, 0]
-# }
 selectedBones = {
     'shin.fk.L': [0, 0, 1],
     'shin.fk.R': [0, 1, 0],

@@ -1,5 +1,4 @@
-'''Change background of scene
-'''
+# Change background of scene
 
 import bpy
 import glob
@@ -11,7 +10,6 @@ def setBackground(filename):
 	""" Set background of the scene"""
 	abspath = bpy.path.abspath(filename)
 	img = bpy.data.images.load(abspath); 
-	# bpy.data.images['Beautiful-Garden-HD-Wallpapers.jpg'];
 	bpy.data.textures['bg'].image = img;
 
 

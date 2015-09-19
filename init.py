@@ -1,4 +1,4 @@
-# Include the directory of this script, to make it usable as a package.
+# Script to load tenon into blender
 import sys
 import imp
 

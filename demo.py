@@ -1,12 +1,12 @@
-''' Include common tasks provided in tenon '''
-from tenon.render import render
+# Provide common tasks of tenon
 import bpy
+
 import tenon.background
 import tenon.animate
 import tenon.skeleton
-from tenon.config import JOINT_FILENAME, TMP_DIR, selectedBones
 
-# TODO: Add support for reload
+from tenon.render import render
+from tenon.config import JOINT_FILENAME, TMP_DIR, selectedBones
 
 version = 'v2'
 
@@ -58,6 +58,7 @@ def batchRender(num):
 		render.write(render.outputFolder + '/depth/' + prefix + '.png')
 
 		# Disabled
+		# This mode is useful for visualization
 		# render.boundaryMode()
 		# render.write('/edge/' + prefix + '.png')
 
@@ -83,7 +84,6 @@ def setupSkeleton():
 
 def dump():
 	''' A quick and dirty script to dump current scene to Downloads folder '''
-	print('dumped')
 	render.write(TMP_DIR + 'blender.png') # TODO: use timestamp in filename to avoid overwrite.
 
 

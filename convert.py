@@ -1,4 +1,5 @@
 #!env python
+# Utility script to convert csv from pandas format to Matlab readable format (no header and id column)
 import pandas as pd
 from config import JOINT_FILENAME
 

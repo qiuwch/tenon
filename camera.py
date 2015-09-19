@@ -1,16 +1,12 @@
-"""
-Control camera of the scene
-"""
+# Control camera of the scene
 import bpy
 
 def sceneCamera():
 	""" Return camera of the scene """
-
 	cam = bpy.data.objects.get('Camera')
 	if not cam:
 		print('No camera')
 	return cam
-
 
 def setCamPos(theta):
 	""" Set the position of scene camera """
