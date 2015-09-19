@@ -35,6 +35,6 @@ function crop_imgs()
             joints(2, :, fileid) = V;
         end
     end
-    save([cropDir 'joints.mat'], 'joints');
+    save([cropDir 'joints-PC.mat'], 'joints');
 end
 
