@@ -4,7 +4,7 @@ import bpy
 import tenon.background
 import tenon.animate
 import tenon.skeleton
-from tenon.config import JOINT_FILENAME, selectedBones
+from tenon.config import JOINT_FILENAME, TMP_DIR, selectedBones
 
 # TODO: Add support for reload
 
@@ -52,10 +52,10 @@ def batchRender(num):
 		prefix = 'im%04d' % (ii+1) # Let it start from 1
 
 		render.realisticMode()
-		render.write('/imgs/' + prefix + '.png')
+		render.write(render.outputFolder + '/imgs/' + prefix + '.png')
 
 		render.depthMode()
-		render.write('/depth/' + prefix + '.png')
+		render.write(render.outputFolder + '/depth/' + prefix + '.png')
 
 		# Disabled
 		# render.boundaryMode()
@@ -80,4 +80,10 @@ def batchRender(num):
 
 def setupSkeleton():
 	tenon.skeleton.createMarker()
+
+def dump():
+	''' A quick and dirty script to dump current scene to Downloads folder '''
+	print('dumped')
+	render.write(TMP_DIR + 'blender.png') # TODO: use timestamp in filename to avoid overwrite.
+
 

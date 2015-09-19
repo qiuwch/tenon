@@ -89,7 +89,11 @@ class Render():
 		if not os.path.exists(self.outputFolder):
 			os.mkdir(self.outputFolder)
 
-		self.scene.render.filepath = self.outputFolder + filename
+		# self.scene.render.filepath = self.outputFolder + filename
+		self.scene.render.filepath = filename
+
+		# TODO: improve the logging system
+		print(self.scene.render.filepath)
 		bpy.ops.render.render(write_still=True)
 
 	# def renderFrame(self, prefix):
