@@ -19,3 +19,8 @@ scenes/background/
 
 # Ignore csv data file
 *.csv
+scenes/human_test.blend
+scenes/painting_demo.blend
+scenes/rest_pose.blend
+scenes/terrible.blend
+scenes/terrible2.blend
