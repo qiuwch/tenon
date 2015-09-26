@@ -12,3 +12,10 @@ __pycache__/
 # Ignore large chunk of data files
 scenes/motions/
 scenes/textures/
+scenes/background/
+
+# IPython notebook, for experiment. No need to include in the repo.
+*.ipynb
+
+# Ignore csv data file
+*.csv
