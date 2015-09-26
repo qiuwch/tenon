@@ -87,14 +87,15 @@ class Render():
 
 	def write(self, filename):
 		''' Write current scene to the filename '''
-		if not os.path.exists(self.outputFolder):
-			os.mkdir(self.outputFolder)
+		# TODO: check whether this location writable
+		# if not os.path.exists(self.outputFolder):
+		# 	os.mkdir(self.outputFolder)
 
 		# self.scene.render.filepath = self.outputFolder + filename
 		self.scene.render.filepath = filename
 
 		# TODO: improve the logging system
-		print(self.scene.render.filepath)
+		print('Render to file %s' % self.scene.render.filepath)
 		bpy.ops.render.render(write_still=True)
 
 	def _offAllOption(self):
