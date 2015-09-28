@@ -96,7 +96,7 @@ def readTaskList(filename):
 
     return tasks
 
-def run():
+def run(num = None):
     # Lazy load
     import bpy
     import tenon.background
@@ -109,9 +109,14 @@ def run():
     TASK_FILE = bpy.path.abspath('//task.csv') # TODO: clean this mess
     tasks = readTaskList(TASK_FILE)
 
+    count = 0 # Number of generated images
     # Execute task
     for t in tasks:
         t.execute()
+
+        count += 1
+        if num and count > num:  # Limit the number of generation, handy for debug
+            break
 
 
 
