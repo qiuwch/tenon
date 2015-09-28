@@ -12,43 +12,106 @@
 '''
 
 # It is annoying that I can not use pandas in my project.
+# import pandas as pd # No need anymore
 
-import pandas as pd
-import bpy
-import tenon.background
-import tenon.animate
-from tenon.render import render
-
-def testTask():
-	df = pd.read_csv(bpy.path.abspath('//task.csv'))
-	print(df.rowId)
-
-	# For each task defined in the task. Configure the scene.
 
 class Task:
-	def __init__(self):
-		pass
+    PROP_LIST = [
+        'rowId',
+        'backgroundId',
+        'frameId',
+        'clothId',
+        'mode' # i:image, j:joint, d:depth, p:part
+    ]
+    def __init__(self):
+        pass
+
+    @classmethod
+    def header(cls):
+        return ','.join(Task.PROP_LIST)
+
+    def parseFromLine(self, line):
+        cols = line.split(',')
+        for i in range(len(Task.PROP_LIST)):
+            setattr(self, Task.PROP_LIST[i], cols[i])
+
+    def serilizeToLine(self):
+        cols = [str(getattr(self, v)) for v in Task.PROP_LIST]
+        line = ','.join(cols)
+        return line
+
+    def execute(self, outputFolder):
+        # TODO: timing this script to boost speed
+        self.outputFolder = outputFolder
+        self.prefix = 'im%04d' % (self.rowId+1) # Let it start from 1
+
+        self.setPose()
+        self.setCloth()
+        self.setBackground()
+
+        self.render()
+
+
+    def render(self):
+        if 'i' in self.mode:
+            render.realisticMode()
+            render.write(self.outputFolder + '/imgs/' + self.prefix + '.png')
+
+        if 'd' in self.mode:
+            render.depthMode()
+            render.write(self.outputFolder + '/depth/' + self.prefix + '.png')
+
+        if 'p' in self.mode:
+            tenon.paint.humanPaintOn()
+            render.write(self.outputFolder + '/paint/' + self.prefix + '.png')
+
+        if 'j' in self.mode:
+            # Write joint annotation to a final csv file
+            # Save self.pose
+            pass
+
+    def setPose(self):
+        joints = tenon.animate.toFrame(self.frameId)
+        self.pose = joints
+
+    def setCloth(self): # The protocol of setting cloth
+        tenon.cloth.changeClothById(tenon.cloth.ClothType.TShirt)
+
+    def setBackground(self): # The protocol of setting background
+        tenon.background.setINRIA(self.backgroundId)
+
+def readTaskList(filename):
+    ''' Read task from csv file, each row corresponds to a task '''
+    tasks = []
+
+    f = open(filename)
+    line = f.readline()
+    while line:
+        t = Task()
+        t.parseFromLine(line)
+        tasks.append(t)
+        line = f.readline()
+
+    f.close()
+
+    return tasks
 
 def run():
-	df = pd.read_csv(bpy.path.abspath('//task.csv'))
-	num = len(df)
+    # Lazy load
+    import bpy
+    import tenon.background
+    import tenon.cloth
+    import tenon.animate
+    import tenon.paint
+    from tenon.render import render
 
-	for i in range(num):
-		t = Task()
-		t.rowId = df.rowId[i]
-		t.backgroundId = df.backgroundId[i]
-		t.frameId = df.frameId[i]
-		t.clothId = df.clothId[i]
-		doTask(t)
+    # Read task list from file
+    TASK_FILE = bpy.path.abspath('//task.csv') # TODO: clean this mess
+    tasks = readTaskList(TASK_FILE)
 
-def doTask(t):
-	tenon.background.setINRIA(t.backgroundId)
+    # Execute task
+    for t in tasks:
+        t.execute()
 
-	# joints = tenon.animate.toFrame(t.frameId);
-	prefix = 'im%04d' % (t.rowId+1) # Let it start from 1
 
-	render.realisticMode()
-	render.write(render.outputFolder + '/imgs/' + prefix + '.png')
 
-	render.depthMode()
-	render.write(render.outputFolder + '/depth/' + prefix + '.png')
