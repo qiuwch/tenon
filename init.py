@@ -1,8 +1,9 @@
 # Script to load tenon into blender
 import sys, imp, re, os
 
-PWD='/Users/qiuwch/Dropbox/Workspace/research/CG/'
-sitePkg='/usr/local/lib/python3.4/site-packages/'
+# Space between = is required
+PWD = '/Users/qiuwch/Dropbox/Workspace/research/CG/'
+sitePkg = '/usr/local/lib/python3.4/site-packages/'
 
 for v in [PWD, sitePkg]:
     sys.path.append(v)
