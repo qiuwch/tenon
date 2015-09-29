@@ -34,6 +34,10 @@ class Task:
         cols = line.split(',')
         for i in range(len(Task.PROP_LIST)):
             setattr(self, Task.PROP_LIST[i], cols[i])
+        self.frameId = int(self.frameId) # Explict conversion
+        self.rowId = int(self.rowId)
+        self.clothId = int(self.clothId)
+        self.backgroundId = int(self.backgroundId)
 
     def serilizeToLine(self):
         cols = [str(getattr(self, v)) for v in Task.PROP_LIST]
@@ -43,7 +47,8 @@ class Task:
     def execute(self, outputFolder):
         # TODO: timing this script to boost speed
         self.outputFolder = outputFolder
-        self.prefix = 'im%04d' % (self.rowId+1) # Let it start from 1
+
+        self.prefix = 'im%04d' % (self.rowId) # Let it start from 1
 
         self.setPose()
         self.setCloth()
@@ -53,6 +58,8 @@ class Task:
 
 
     def render(self):
+        from tenon.render import render
+
         if 'i' in self.mode:
             render.realisticMode()
             render.write(self.outputFolder + '/imgs/' + self.prefix + '.png')
@@ -62,8 +69,9 @@ class Task:
             render.write(self.outputFolder + '/depth/' + self.prefix + '.png')
 
         if 'p' in self.mode:
-            tenon.paint.humanPaintOn()
+            render.paintModeOn()
             render.write(self.outputFolder + '/paint/' + self.prefix + '.png')
+            render.paintModeOff()
 
         if 'j' in self.mode:
             # Write joint annotation to a final csv file
@@ -71,13 +79,17 @@ class Task:
             pass
 
     def setPose(self):
+        import tenon.animate # TODO: check speed issue
         joints = tenon.animate.toFrame(self.frameId)
         self.pose = joints
 
     def setCloth(self): # The protocol of setting cloth
-        tenon.cloth.changeClothById(tenon.cloth.ClothType.TShirt)
+        import tenon.cloth
+        tenon.cloth.changeClothById(tenon.cloth.ClothType.TShirt, self.clothId)
 
     def setBackground(self): # The protocol of setting background
+        import tenon.background
+        print('backgroundId %d' % self.backgroundId)
         tenon.background.setINRIA(self.backgroundId)
 
 def readTaskList(filename):
@@ -85,6 +97,7 @@ def readTaskList(filename):
     tasks = []
 
     f = open(filename)
+    headerLine = f.readline() # Skip the first line, TODO: check consistency
     line = f.readline()
     while line:
         t = Task()
@@ -96,14 +109,21 @@ def readTaskList(filename):
 
     return tasks
 
+def getBGList():
+    from tenon.config import INRIA_DIR
+    import glob
+    import bpy
+    files = glob.glob(bpy.path.abspath(INRIA_DIR) + '/*.jpg')
+    return files
+
+
 def run(num = None):
     # Lazy load
     import bpy
-    import tenon.background
-    import tenon.cloth
-    import tenon.animate
-    import tenon.paint
-    from tenon.render import render
+
+    # Run configuration checking
+    bgList = getBGList()
+    print('Number of background %d' % len(bgList))
 
     # Read task list from file
     TASK_FILE = bpy.path.abspath('//task.csv') # TODO: clean this mess
@@ -112,7 +132,7 @@ def run(num = None):
     count = 0 # Number of generated images
     # Execute task
     for t in tasks:
-        t.execute()
+        t.execute('/q/cache/clothParsing/')
 
         count += 1
         if num and count > num:  # Limit the number of generation, handy for debug

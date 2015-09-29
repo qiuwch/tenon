@@ -20,3 +20,6 @@ from tenon.config import *
 import tenon.pose
 import tenon.export
 from tenon.bpyutil import *
+import tenon.task
+
+# TODO: Clean this area

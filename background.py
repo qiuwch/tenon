@@ -4,8 +4,6 @@ import bpy
 import glob
 from tenon.config import INRIA_DIR
 
-INRIA_SIZE = len(glob.glob(INRIA_DIR + '*.jpg'))
-
 def setBackground(filename):
 	""" Set background of the scene"""
 	abspath = bpy.path.abspath(filename)
@@ -13,7 +11,12 @@ def setBackground(filename):
 	bpy.data.textures['bg'].image = img;
 
 
+def INRIAfileList():
+	INRIAfiles = glob.glob(bpy.path.abspath(INRIA_DIR) + '*.jpg')
+    # TODO: avoid glob each time
+	return INRIAfiles
+
 def setINRIA(id):
 	""" Set background with INRIA dataset """
-	files = glob.glob(INRIA_DIR + '*.jpg')
+	files = INRIAfileList()
 	setBackground(files[id])
