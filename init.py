@@ -19,7 +19,7 @@ def r(v):
 if '__file__' in globals():
     with open('./init.py') as f:
         data = f.read()
-        re.sub('PWD = .*', 'PWD = %s' % os.path.abspath('.'), data)
+        data = re.sub('PWD = .*', 'PWD = %s' % os.path.abspath('.'), data)
         print(data)
 else:
     # Import for the convinience of interactive shell
