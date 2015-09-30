@@ -10,9 +10,11 @@ def pathHelper(relpath):
 	# path = '..' + relpath
 	return path
 
-def getClothList():
-    clothList = glob.glob(pathHelper('//textures/*.jpg'))
-    return clothList
+def getClothList(): # TODO combine this with task execution
+    jpgs = glob.glob(pathHelper('//textures/*.jpg'))
+    pngs = glob.glob(pathHelper('//textures/*.png'))
+    files = jpgs + pngs
+    return files
 
 def getBGList():
     BGlist = glob.glob(pathHelper('//background/INRIA/*.jpg'))
@@ -39,18 +41,19 @@ def generateSeq144():
     f.write(Task.header() + '\n')
 
     count = 0
-    for ic in range(nCloth):
-        for iframe in range(nFrame):
-            task = Task()
-            task.rowId = count
-            task.clothId = ic
-            task.frameId = iframe
-            task.backgroundId = random.randrange(0, nBG) # Pick from uniform
-            task.mode = 'ipj' # See definition
-            line = task.serilizeToLine()
+    # for ic in range(nCloth):
+    for iframe in range(nFrame):
+        task = Task()
+        task.rowId = count
+        # task.clothId = ic
+        task.clothId = random.randrange(0, nCloth)
+        task.frameId = iframe
+        task.backgroundId = random.randrange(0, nBG) # Pick from uniform
+        task.mode = 'ipj' # See definition
+        line = task.serilizeToLine()
 
-            f.write(line + '\n')
-            count += 1
+        f.write(line + '\n')
+        count += 1
 
     f.close()
 

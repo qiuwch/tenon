@@ -12,7 +12,9 @@ textureConfig = {
 
 def changeClothById(clothType, id):
 	''' Change clothes by given id '''
-	files = glob.glob(bpy.path.abspath('//textures/*.jpg'))
+	jpgs = glob.glob(bpy.path.abspath('//textures/*.jpg'))
+	pngs = glob.glob(bpy.path.abspath('//textures/*.png'))
+	files = jpgs + pngs
 	files = [bpy.path.relpath(v) for v in files]
 	if id < 0 or id > (len(files) - 1):
 		print('Index out of range')
