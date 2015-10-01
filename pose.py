@@ -61,7 +61,7 @@ def testPose():
     setBoneYZXEuler(upper_arm, 43, 54, 65)
 
 def createControlPoint():
-    names = [
+    names = [ # Order does not matter
         'ankle.r',
         'knee.r',
         'hip.r',
@@ -75,7 +75,8 @@ def createControlPoint():
         'elbow.l',
         'wrist.l',
         'neck',
-        'headTop'
+        'headTop',
+        'root'
     ]
     for jointName in names:
         controlEmpty = bpy.data.objects.get(jointName)
@@ -86,19 +87,43 @@ def createControlPoint():
 
     # setup joint constraint manually
 
-def animateCP():
+def animateCP(id):
     # Load data from exported csv file
     import pandas as pd
-    pts = pd.read_csv('/q/cache/lsp_2d_3d/0001.csv')
+    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % (id+1))
+
+    # The mapping from csv to empty
+    order = [
+        'root',
+        'neck',
+        'shoulder.l',
+        'elbow.l',
+        'wrist.l',
+        'shoulder.r',
+        'elbow.r',
+        'wrist.r',
+        'headTop',
+        'hip.l',
+        'knee.l',
+        'ankle.l',
+        'foot.l',
+        'hip.r',
+        'knee.r',
+        'ankle.r',
+        'foot.r'
+    ]
+    obj = bpy.data.objects['human_model']
+    root = obj.pose.bones['root'].head
     #
     for i in range(len(pts.x)):
-        jointName = '%04d' % i
+        jointName = order[i]
         controlEmpty = bpy.data.objects.get(jointName)
         if controlEmpty == None:
-            bpy.ops.object.empty_add()
-            controlEmpty = bpy.context.object
-            controlEmpty.name = jointName
+            # bpy.ops.object.empty_add()
+            # controlEmpty = bpy.context.object
+            # controlEmpty.name = jointName
+            continue
         # 
-        controlEmpty.location.x = pts.x[i]
-        controlEmpty.location.y = pts.y[i]
-        controlEmpty.location.z = pts.z[i]
+        controlEmpty.location.x = pts.x[i] - pts.x[0] + root.x
+        controlEmpty.location.y = pts.y[i] - pts.y[0] + root.y
+        controlEmpty.location.z = pts.z[i] - pts.z[0] + root.z
