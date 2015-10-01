@@ -93,6 +93,72 @@ def export3dJoints(filename):
         f.write(line)
     f.close()
 
+def restPose():
+    ''' Save the rest pose of the armature '''
+    pass
+
+def boneLength():
+    def getJointLoc(boneName, jointType):
+        obj = bpy.data.objects['human_model']
+        poseBone = obj.pose.bones[boneName]
+        if jointType == 'head':
+            loc = poseBone.head
+        elif jointType == 'tail':
+            loc = poseBone.tail
+        else:
+            loc = None
+        return loc
+
+    def computeDistance(loc1, loc2):
+        return (loc1 - loc2).length
+
+    def getBoneLength(pair):
+        names = pair[0]
+
+        [name1, sep, jointType1] = names[0].rpartition('.')
+        loc1 = getJointLoc(name1, jointType1)
+
+        [name2, sep, jointType2] = names[1].rpartition('.')
+        loc2 = getJointLoc(name2, jointType2)
+
+        length = computeDistance(loc1, loc2)
+
+        return length
+
+    ''' Save the bone length '''
+    # Define the two end point of a bone, also define the tree structure
+    link = [
+        [('root.head', 'neck.head'), (1, 2)],
+
+        [('neck.head', 'head.tail'), (2, 9)], # The number is orderId in 3D skeleton
+
+        [('neck.head', 'deltoid.R.tail'), (2, 6)],
+        [('upper_arm.fk.R.head', 'upper_arm.fk.R.tail'), (6, 7)],
+        [('forearm.fk.R.head', 'forearm.fk.R.tail'), (7, 8)],
+
+        [('neck.head', 'deltoid.L.tail'), (2, 3)],
+        [('upper_arm.fk.L.head', 'upper_arm.fk.L.tail'), (3, 4)],
+        [('forearm.fk.L.head', 'forearm.fk.L.tail'), (4, 5)],
+
+        [('neck.head', 'thigh.fk.R.head'), (2, 14)],        
+        [('thigh.fk.R.head', 'thigh.fk.R.tail'), (14, 15)],
+        [('shin.fk.R.head', 'shin.fk.R.tail'), (15, 16)],
+        [('shin.fk.R.tail', 'toe.fk.R.tail'), (16, 17)],
+
+        [('neck.head', 'thigh.fk.L.head'), (2, 10)],
+        [('thigh.fk.L.head', 'thigh.fk.L.tail'), (10, 11)],
+        [('shin.fk.L.head', 'shin.fk.L.tail'), (11, 12)],
+        [('shin.fk.L.tail', 'toe.fk.L.tail'), (12, 13)]
+    ]
+
+    with open('/Users/qiuwch/Downloads/boneLength.csv', 'w') as f:
+        for pair in link:
+            length = getBoneLength(pair)
+            line = '%s,%s,%d,%d,%.6f' % (pair[0][0], pair[0][1], pair[1][0], pair[1][1], length)
+            print(line)
+            f.write(line + '\n')
+
+
 '''
 arm = selectedPoseBone()
 A = arm.parent.bone.matrix_local
