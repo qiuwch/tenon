@@ -1,3 +1,4 @@
+import glob
 # Define global variables for this project.
 INRIA_DIR = '//background/INRIA/'
 RENDER_OUTPUT_DIR = '/q/cache/render_output/'
@@ -25,18 +26,32 @@ selectedBones = [
 
 # Define the skeleton
 connections = [
-# Leg
-('thigh.fk.L.head', 'thigh.fk.L.tail'),
-('thigh.fk.R.head', 'thigh.fk.R.tail'),
-('thigh.fk.L.tail', 'shin.fk.L.tail'),
-('thigh.fk.R.tail', 'shin.fk.R.tail'),
-# Arm
-('upper_arm.fk.L.head', 'upper_arm.fk.L.tail'),
-('upper_arm.fk.R.head', 'upper_arm.fk.R.tail'),
-('upper_arm.fk.L.tail', 'forearm.fk.L.tail'),
-('upper_arm.fk.R.tail', 'forearm.fk.R.tail'),
-# Head
-('head.tail', 'neck.head'),
-('thigh.fk.L.head', 'upper_arm.fk.L.head'),
-('thigh.fk.R.head', 'upper_arm.fk.R.head')
+    # Leg
+    ('thigh.fk.L.head', 'thigh.fk.L.tail'),
+    ('thigh.fk.R.head', 'thigh.fk.R.tail'),
+    ('thigh.fk.L.tail', 'shin.fk.L.tail'),
+    ('thigh.fk.R.tail', 'shin.fk.R.tail'),
+    # Arm
+    ('upper_arm.fk.L.head', 'upper_arm.fk.L.tail'),
+    ('upper_arm.fk.R.head', 'upper_arm.fk.R.tail'),
+    ('upper_arm.fk.L.tail', 'forearm.fk.L.tail'),
+    ('upper_arm.fk.R.tail', 'forearm.fk.R.tail'),
+    # Head
+    ('head.tail', 'neck.head'),
+    ('thigh.fk.L.head', 'upper_arm.fk.L.head'),
+    ('thigh.fk.R.head', 'upper_arm.fk.R.head')
 ]
+
+def pathHelper(relpath):
+    path = '../scenes' + relpath
+    return path
+    
+def getClothList(): # TODO combine this with task execution
+    jpgs = glob.glob(pathHelper('//textures/*.jpg'))
+    pngs = glob.glob(pathHelper('//textures/*.png'))
+    files = jpgs + pngs
+    return files
+
+def getBGList():
+    BGlist = glob.glob(pathHelper('//background/INRIA/*.jpg'))
+    return BGlist
