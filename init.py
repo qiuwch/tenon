@@ -2,7 +2,7 @@
 import sys, imp, re, os
 
 # Space between = is required
-PWD = '/Users/qiuwch/Dropbox/Workspace/research/CG/'
+PWD = '/q/run/'
 sitePkg = '/usr/local/lib/python3.4/site-packages/'
 
 for v in [PWD, sitePkg]:

@@ -1,3 +1,4 @@
+from datetime import datetime
 import glob
 import random
 
@@ -6,7 +7,7 @@ sys.path.append('..')
 from task import Task
 
 def pathHelper(relpath):
-	path = '/Users/qiuwch/Dropbox/Workspace/research/CG/tenon/scenes' + relpath
+	path = '/Users/qiuwch/Dropbox/Workspace/research/CG/code/tenon/scenes' + relpath
 	# path = '..' + relpath
 	return path
 
@@ -37,7 +38,8 @@ def generateSeq144():
     nFrame = 935
     print 'Number of poses: %d' % nFrame
 
-    f = open(pathHelper('//Seq144.csv'), 'w')
+    now = datetime.now()
+    f = open(pathHelper('//%02d.%02d_Seq144.csv' % (now.month, now.day)), 'w')
     f.write(Task.header() + '\n')
 
     count = 0
@@ -49,7 +51,7 @@ def generateSeq144():
         task.clothId = random.randrange(0, nCloth)
         task.frameId = iframe
         task.backgroundId = random.randrange(0, nBG) # Pick from uniform
-        task.mode = 'ipj' # See definition
+        task.mode = 'ipjd' # See definition
         line = task.serilizeToLine()
 
         f.write(line + '\n')
