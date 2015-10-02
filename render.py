@@ -28,33 +28,31 @@ class Render():
 
 
     def _enableDepth(self):
-        pass
+        # TODO: right now this use a normalize node, so the depth will not be consistent across frames
+        # Need to setup the scene following this tutorial
+        # bpy.context.scene.use_nodes = True
+        tree = bpy.context.scene.node_tree
+        depthNode = tree.nodes.get('Invert')
+        compositeNode = tree.nodes.get('Composite')
+
+        links = tree.links
+        links.new(depthNode.outputs[0], compositeNode.inputs[0])
 
     def _disableDepth(self):
-        pass
+        # bpy.context.scene.use_nodes = True
+        tree = bpy.context.scene.node_tree
+        renderLayersNode = tree.nodes.get('Render Layers')
+        compositeNode = tree.nodes.get('Composite')
 
-    # def _enableDepth(self):
-    #   # bpy.context.scene.use_nodes = True
-    #   tree = bpy.context.scene.node_tree
-    #   depthNode = tree.nodes.get('Invert')
-    #   compositeNode = tree.nodes.get('Composite')
+        links = tree.links
+        links.new(renderLayersNode.outputs[0], compositeNode.inputs[0])
 
-    #   links = tree.links
-    #   links.new(depthNode.outputs[0], compositeNode.inputs[0])
-
-    # def _disableDepth(self):
-    #   # bpy.context.scene.use_nodes = True
-    #   tree = bpy.context.scene.node_tree
-    #   renderLayersNode = tree.nodes.get('Render Layers')
-    #   compositeNode = tree.nodes.get('Composite')
-
-    #   links = tree.links
-    #   links.new(renderLayersNode.outputs[0], compositeNode.inputs[0])
-
-    def depthMode(self):
+    def depthModeOn(self):
         ''' Render depth of the scene. To use this function, the scene needs to be pre-configured. '''
-        self.realisticMode()
         self._enableDepth()
+
+    def depthModeOff(self):
+        self._disableDepth()
 
     def boundaryMode(self):
         ''' Only display boundary of the object '''
@@ -114,6 +112,26 @@ class Render():
         # TODO: improve the logging system
         print('Render to file %s' % self.scene.render.filepath)
         bpy.ops.render.render(write_still=True)
+
+    def exportJoint(self):
+        from tenon.skeleton import world2camera
+        from tenon.config import selectedBones
+
+        obj = bpy.data.objects['human_model']
+        joints = [] # Return joint position of this frame
+        for boneInfo in selectedBones:
+            boneName = boneInfo[0]
+            tailOrHead = boneInfo[1]
+            poseBone = obj.pose.bones[boneName]
+
+            if tailOrHead == 'head':
+                jointLocation = poseBone.head
+            elif tailOrHead == 'tail':
+                jointLocation = poseBone.tail
+
+            joints.append((boneName, world2camera(jointLocation)))
+        return joints       
+
 
     def _offAllOption(self):
         self.renderLayer.use_zmask = False
