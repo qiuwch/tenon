@@ -7,8 +7,11 @@ from tenon.config import INRIA_DIR
 def setBackground(filename):
 	""" Set background of the scene"""
 	abspath = bpy.path.abspath(filename)
-	img = bpy.data.images.load(abspath); 
-	bpy.data.textures['bg'].image = img;
+	basename = bpy.path.basename(abspath)
+	img = bpy.data.images.get(basename)
+	if img == None:
+		img = bpy.data.images.load(abspath); 
+	bpy.data.textures['bg'].image = img
 
 
 def INRIAfileList():
