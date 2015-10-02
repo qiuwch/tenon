@@ -174,15 +174,21 @@ class Task:
 def ls():
     ''' Utility to list all available task '''
     import glob
-    import bpy
-    csvFiles = glob.glob(bpy.path.abspath('//*.csv')) # TODO: fix path helper
+
+    try:
+        import bpy
+        fmt = bpy.path.abspath('//*.csv')
+    except:
+        fmt = './scenes/*.csv'
+
+    csvFiles = glob.glob(fmt) # TODO: fix path helper
 
     js = []
     for ii in range(len(csvFiles)):
         csvFile = csvFiles[ii]
         j = Job.parseFromFile(csvFile)
         print('%d: %s' % (ii, csvFiles[ii]))
-        print('Name:%s, Date:%s' % (j.name, j.date))
+        print('Name:%s, Date:%s, Num:%d' % (j.name, j.date, len(j.tasks)))
         
         js.append(j)
     return js

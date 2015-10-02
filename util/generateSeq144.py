@@ -38,7 +38,7 @@ def generateSeq144():
     j.comment = 'This is the first batch task definition'
     j.outputFolder = '/q/cache/clothParsing'
     j.tasks = tasks
-    j.save(config.pathHelper('//%02d.%02d_Seq144.csv' % (now.month, now.day)), 'w')
+    j.save(config.pathHelper('//%02d.%02d_Seq144.csv' % (now.month, now.day)))
 
 if __name__ == '__main__':
     generateSeq144() # If run idenpendently, this script and be used to generate the task list
