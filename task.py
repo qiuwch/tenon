@@ -20,10 +20,15 @@ class Job:
 
     def save(self, filename):
         self.validate()
-        
-        count = 0
+
         with open(filename, 'w') as f:
+            for prop in dir(self):
+                if prop[0] != '_' and type(getattr(self, prop)) == str:
+                    line = '%s : %s' % (prop, getattr(self, prop))
+                    f.write(line + '\n')
+
             f.write(Task.header() + '\n')
+            count = 0
             for task in self.tasks:
                 task.rowId = count
                 line = task.serilizeToLine()
@@ -46,13 +51,14 @@ class Job:
                 content = line[sep+1:].strip()
                 setattr(j, header, content)
                 line = f.readline()
+                sep = line.find(':')
 
             while line.strip() == '':
                 line = f.readline() # Skip empty line
 
             # Read task list from file
             headerLine = line
-            assert(headerLine == ','.join(Task.PROP_LIST))
+            assert(headerLine.strip() == ','.join(Task.PROP_LIST))
 
             line = f.readline()
             while line:
@@ -67,7 +73,7 @@ class Job:
 
         return j
 
-    def run(self, limit=5):
+    def run(self, limit=None):
         count = 0 # Number of generated images
         # Execute task
         for t in self.tasks:
@@ -144,9 +150,10 @@ class Task:
     def serializeJointInfo(self, filename, joints):
         import os
         folder = os.path.split(filename)[0]
+        print(folder)
         if not os.path.isdir(folder):
             os.makedirs(folder)
-        with open(self.outputFolder + '/joint/' + self.prefix + '.csv', 'w') as f:
+        with open(filename, 'w') as f:
             for j in joints:
                 f.write('%s,%s\n' % (j[0], ','.join([str(v) for v in j[1]])))
 
@@ -162,23 +169,25 @@ class Task:
 
     def setBackground(self): # The protocol of setting background
         import tenon.background
-        print('backgroundId %d' % self.backgroundId)
         tenon.background.setINRIA(self.backgroundId)
 
 def ls():
     ''' Utility to list all available task '''
     import glob
-    csvFiles = glob.glob('./scenes/*.csv')
-    for csvFile in csvFiles:
-        j = Job.parseFromFile(csvFile)
-        print(j.name)
+    import bpy
+    csvFiles = glob.glob(bpy.path.abspath('//*.csv')) # TODO: fix path helper
 
+    js = []
     for ii in range(len(csvFiles)):
+        csvFile = csvFiles[ii]
+        j = Job.parseFromFile(csvFile)
         print('%d: %s' % (ii, csvFiles[ii]))
-
-    return csvFiles
+        print('Name:%s, Date:%s' % (j.name, j.date))
+        
+        js.append(j)
+    return js
 
 
 if __name__ == '__main__':
     # Run a unit test here
-    pass
+    ls()
