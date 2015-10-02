@@ -65,8 +65,9 @@ class Task:
             render.write(self.outputFolder + '/imgs/' + self.prefix + '.png')
 
         if 'd' in self.mode:
-            render.depthMode()
+            render.depthModeOn()
             render.write(self.outputFolder + '/depth/' + self.prefix + '.png')
+            render.depthModeOff()
 
         if 'p' in self.mode:
             render.paintModeOn()
@@ -75,8 +76,18 @@ class Task:
 
         if 'j' in self.mode:
             # Write joint annotation to a final csv file
-            # Save self.pose
-            pass
+            joints = render.exportJoint()
+            self.serializeJointInfo(self.outputFolder + '/joint' + self.prefix + '.csv', joints)
+
+    def serializeJointInfo(self, filename, joints):
+        import os
+        folder = os.path.split(filename)[0]
+        if not os.path.isdir(folder):
+            os.makedirs(folder)
+        with open(self.outputFolder + '/joint/' + self.prefix + '.csv', 'w') as f:
+            for j in joints:
+                f.write('%s,%s\n' % (j[0], ','.join([str(v) for v in j[1]])))
+
 
     def setPose(self):
         import tenon.animate # TODO: check speed issue
@@ -109,25 +120,24 @@ def readTaskList(filename):
 
     return tasks
 
-def getBGList():
-    from tenon.config import INRIA_DIR
-    import glob
+def ls():
+    ''' Utility to list all available task '''
     import bpy
-    files = glob.glob(bpy.path.abspath(INRIA_DIR) + '/*.jpg')
-    return files
+    import glob
+    csvFiles = glob.glob(bpy.path.abspath('//*.csv'))
+    for ii in range(len(csvFiles)):
+        print('%d: %s' % (ii, csvFiles[ii]))
+
+    return csvFiles
 
 
-def run(num = None):
+def run(taskId = 0, num = 5):
     # Lazy load
     import bpy
 
-    # Run configuration checking
-    bgList = getBGList()
-    print('Number of background %d' % len(bgList))
-
     # Read task list from file
-    TASK_FILE = bpy.path.abspath('//task.csv') # TODO: clean this mess
-    tasks = readTaskList(TASK_FILE)
+    taskFiles = ls()
+    tasks = readTaskList(bpy.path.abspath(taskFiles[taskId]))
 
     count = 0 # Number of generated images
     # Execute task
