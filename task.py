@@ -1,19 +1,81 @@
 # Script to batch run tasks defined in a data file.
+# TODO: Consider rewriting it with protobuf
+class Job:
+    requiredProp = [ # Required properties
+        'name',
+        'date',
+        'outputFolder', 
+        # TODO: Check consistency, 'blendFile',
+    ]
 
-# What kind of variables I need to tweak in the batch mode?
+    def __init__(self):
+        pass
 
-'''
-1. Lighting
-2. Pose
-3. Camera (view angle)
-4. Cloth
-5. Occlusion?
-6. Blur, out of focus?
-'''
+    def validate(self):
+        # Check whether this is a valid job
+        for prop in Job.requiredProp: # Make sure this file is valid
+            assert(prop in dir(self))
 
-# It is annoying that I can not use pandas in my project.
-# import pandas as pd # No need anymore
+        assert(len(self.tasks) != 0)
 
+    def save(self, filename):
+        self.validate()
+        
+        count = 0
+        with open(filename, 'w') as f:
+            f.write(Task.header() + '\n')
+            for task in self.tasks:
+                task.rowId = count
+                line = task.serilizeToLine()
+                f.write(line + '\n')
+                count += 1
+
+
+    @staticmethod
+    def parseFromFile(filename):
+        ''' Read task from csv file, each row corresponds to a task '''
+        j = Job()
+        tasks = []
+
+        with open(filename) as f:
+            # Read header from file
+            line = f.readline()
+            sep = line.find(':')
+            while sep != -1:
+                header = line[:sep].strip()
+                content = line[sep+1:].strip()
+                setattr(j, header, content)
+                line = f.readline()
+
+            while line.strip() == '':
+                line = f.readline() # Skip empty line
+
+            # Read task list from file
+            headerLine = line
+            assert(headerLine == ','.join(Task.PROP_LIST))
+
+            line = f.readline()
+            while line:
+                t = Task()
+                t.parseFromLine(line)
+                tasks.append(t)
+                line = f.readline()
+
+            j.tasks = tasks
+
+        j.validate()
+
+        return j
+
+    def run(self, limit=5):
+        count = 0 # Number of generated images
+        # Execute task
+        for t in self.tasks:
+            t.execute(self.outputFolder)
+
+            count += 1
+            if limit and count >= limit:  # Limit the number of generation, handy for debug
+                break
 
 class Task:
     PROP_LIST = [
@@ -103,50 +165,20 @@ class Task:
         print('backgroundId %d' % self.backgroundId)
         tenon.background.setINRIA(self.backgroundId)
 
-def readTaskList(filename):
-    ''' Read task from csv file, each row corresponds to a task '''
-    tasks = []
-
-    f = open(filename)
-    headerLine = f.readline() # Skip the first line, TODO: check consistency
-    line = f.readline()
-    while line:
-        t = Task()
-        t.parseFromLine(line)
-        tasks.append(t)
-        line = f.readline()
-
-    f.close()
-
-    return tasks
-
 def ls():
     ''' Utility to list all available task '''
-    import bpy
     import glob
-    csvFiles = glob.glob(bpy.path.abspath('//*.csv'))
+    csvFiles = glob.glob('./scenes/*.csv')
+    for csvFile in csvFiles:
+        j = Job.parseFromFile(csvFile)
+        print(j.name)
+
     for ii in range(len(csvFiles)):
         print('%d: %s' % (ii, csvFiles[ii]))
 
     return csvFiles
 
 
-def run(taskId = 0, num = 5):
-    # Lazy load
-    import bpy
-
-    # Read task list from file
-    taskFiles = ls()
-    tasks = readTaskList(bpy.path.abspath(taskFiles[taskId]))
-
-    count = 0 # Number of generated images
-    # Execute task
-    for t in tasks:
-        t.execute('/q/cache/clothParsing/')
-
-        count += 1
-        if num and count > num:  # Limit the number of generation, handy for debug
-            break
-
-
-
+if __name__ == '__main__':
+    # Run a unit test here
+    pass
