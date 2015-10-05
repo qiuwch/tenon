@@ -129,7 +129,8 @@ class Render():
             elif tailOrHead == 'tail':
                 jointLocation = poseBone.tail
 
-            joints.append((boneName, world2camera(jointLocation)))
+            boneId = '%s.%s' % (boneName, tailOrHead)
+            joints.append((boneId, world2camera(jointLocation)))
         return joints       
 
 

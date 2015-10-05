@@ -145,7 +145,7 @@ class Task:
         if 'j' in self.mode:
             # Write joint annotation to a final csv file
             joints = render.exportJoint()
-            self.serializeJointInfo(self.outputFolder + '/joint' + self.prefix + '.csv', joints)
+            self.serializeJointInfo(self.outputFolder + '/joint/' + self.prefix + '.csv', joints)
 
     def serializeJointInfo(self, filename, joints):
         import os
