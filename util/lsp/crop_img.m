@@ -1,13 +1,11 @@
-function [crop, U, V] = crop_img(im, depth, X, Y)
+function [crop, U, V] = crop_img(im, fgMask, X, Y)
 	% crop : cropped image
 	% U : mapped X coordinate
 	% V : mapped Y coordinate
 
-	fg = depth(:,:,1) > 0;
-
 	% compute the bounding box of fg
-	imSize = size(depth(:,:,1));
-	[fgY, fgX] = ind2sub(imSize, find(fg)); % This is different from X, Y
+	imSize = size(fgMask);
+	[fgY, fgX] = ind2sub(imSize, find(fgMask)); % This is different from X, Y
 
 	h = max(fgY) - min(fgY) + 1; w = max(fgX) - min(fgX) + 1;
 
