@@ -43,6 +43,7 @@ def generateFixFactor():
             t = copy.copy(defTask)
             t.frameId = iframe
             t.backgroundId = backgroundId
+            t.clothId = random.randrange(0, nCloth)
             tasks.append(t)
 
     j = Job()
