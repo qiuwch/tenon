@@ -2,10 +2,10 @@ import bpy
 # This script can generate detailed human part labeling.
 # Paint the model first
 
-body = bpy.data.objects['human_model:Body']
-jeans = bpy.data.objects['human_model:jeans01']
-hair = bpy.data.objects['human_model:mhair02']
-tshirt = bpy.data.objects['human_model:tshirt02']
+body = bpy.data.objects.get('human_model:Body')
+jeans = bpy.data.objects.get('human_model:jeans01')
+hair = bpy.data.objects.get('human_model:mhair02')
+tshirt = bpy.data.objects.get('human_model:tshirt02')
 
 def humanPaintOn():
 	for v in [body, jeans, hair, tshirt]:
