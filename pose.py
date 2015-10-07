@@ -90,7 +90,8 @@ def createControlPoint():
 def animateCP(id):
     # Load data from exported csv file
     import pandas as pd
-    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % (id+1))
+    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
+    # Swap y an z axis
 
     # The mapping from csv to empty
     order = [
@@ -124,6 +125,110 @@ def animateCP(id):
             # controlEmpty.name = jointName
             continue
         # 
-        controlEmpty.location.x = pts.x[i] - pts.x[0] + root.x
-        controlEmpty.location.y = pts.y[i] - pts.y[0] + root.y
-        controlEmpty.location.z = pts.z[i] - pts.z[0] + root.z
+        ptx = pts.x[i] - pts.x[0]
+        pty = pts.y[i] - pts.y[0]
+        ptz = pts.z[i] - pts.z[0]
+        controlEmpty.location.x = ptx + root.x
+        controlEmpty.location.y = ptz + root.y# Swap y and z
+        controlEmpty.location.z = - pty + root.z
+
+
+def loadJointLocCSV(csvFile):
+    import pandas as pd
+    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
+    
+    pass
+
+
+def createTestEditBone(id):
+    # The mapping from csv to empty
+    # Use this function with armature_visualize.blend
+    order = [
+        'root',
+        'neck',
+        'shoulder.l',
+        'elbow.l',
+        'wrist.l',
+        'shoulder.r',
+        'elbow.r',
+        'wrist.r',
+        'headTop',
+        'hip.l',
+        'knee.l',
+        'ankle.l',
+        'foot.l',
+        'hip.r',
+        'knee.r',
+        'ankle.r',
+        'foot.r'
+    ]
+
+    import pandas as pd
+    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
+
+    # Load joint location from csv file.    
+    loc = {}
+    for i in range(len(pts.x)):
+        jointName = order[i]
+        loc[jointName] = mathutils.Vector((pts.x[i], pts.y[i], pts.z[i]))
+
+    # Generate edit bones to show joint location
+
+    editBones = [
+        'back-bone', 'R-shldr', 'R-Uarm', 'R-Larm', 
+        'L-shldr', 'L-Uarm', 'L-Larm', 'head',
+        'R-hip', 'R-Uleg', 'R-Lleg', 'R-feet', 
+        'L-hip', 'L-Uleg', 'L-Lleg', 'L-feet'
+    ];
+
+    import pandas as pd
+    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
+
+    # Mapping between bone and joint
+    editBoneJointMapping = {
+        'back-bone.head': 'root',
+        'back-bone.tail': 'neck',
+        'R-shldr.head': 'neck',
+        'R-shldr.tail': 'shoulder.r',
+        'R-Uarm.head': 'shoulder.r',
+        'R-Uarm.tail': 'elbow.r',
+        'R-Larm.head': 'elbow.r',
+        'R-Larm.tail': 'wrist.r',
+        'L-shldr.head': 'neck',
+        'L-shldr.tail': 'shoulder.l',
+        'L-Uarm.head': 'shoulder.l',
+        'L-Uarm.tail': 'elbow.l',
+        'L-Larm.head': 'elbow.l',
+        'L-Larm.tail': 'wrist.l',
+        'head.tail': 'headTop',
+        'head.head': 'neck',
+        'R-hip.head': 'root',
+        'R-hip.tail': 'hip.r',
+        'R-Uleg.head': 'hip.r',
+        'R-Uleg.tail': 'knee.r',
+        'R-Lleg.head': 'knee.r',
+        'R-Lleg.tail': 'ankle.r',
+        'R-feet.head': 'ankle.r',
+        'R-feet.tail': 'foot.r',
+        'L-hip.head': 'root',
+        'L-hip.tail': 'hip.l',
+        'L-Uleg.head': 'hip.l',
+        'L-Uleg.tail': 'knee.l',
+        'L-Lleg.head': 'knee.l',
+        'L-Lleg.tail': 'ankle.l',
+        'L-feet.head': 'ankle.l',
+        'L-feet.tail': 'foot.l'
+    };
+
+    for editBoneName in editBones:
+        # Create an edit bone to show joint location
+        editBone = bpy.context.object.data.edit_bones.get(editBoneName)
+        if not editBone:
+            editBone = bpy.context.object.data.edit_bones.new(editBoneName)
+        headJointName = editBoneJointMapping[editBoneName + '.head']
+        tailJointName = editBoneJointMapping[editBoneName + '.tail']
+
+        editBone.head = loc[headJointName]
+        editBone.tail = loc[tailJointName]
+
+
