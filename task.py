@@ -1,5 +1,12 @@
 # Script to batch run tasks defined in a data file.
 # TODO: Consider rewriting it with protobuf
+
+def getStrPropList(obj):
+    return [v for v in dir(obj) if not v.startswith('__') and type(getattr(obj, v)) == str]
+
+def info(msg): # Use this to differentiate debug info with useful info
+    print(msg)
+
 class Job:
     requiredProp = [ # Required properties
         'name',
@@ -22,12 +29,16 @@ class Job:
         self.validate()
 
         with open(filename, 'w') as f:
-            for prop in dir(self):
-                if prop[0] != '_' and type(getattr(self, prop)) == str:
-                    line = '%s : %s' % (prop, getattr(self, prop))
-                    f.write(line + '\n')
+            taskInstance = self.tasks[0]
+            self.tasktype = taskInstance.__class__.__name__
+            # Be aware: this is black tech of python, cautious of malware input
+            # for prop in dir(self):
+            for prop in getStrPropList(self):
+                # if not prop[0].startswith('__') and type(getattr(self, prop)) == str:
+                line = '%s : %s' % (prop, getattr(self, prop))
+                f.write(line + '\n')
 
-            f.write(Task.header() + '\n')
+            f.write(taskInstance.header() + '\n')
             count = 0
             for task in self.tasks:
                 task.rowId = count
@@ -53,17 +64,28 @@ class Job:
                 line = f.readline()
                 sep = line.find(':')
 
+            # print(j.tasktype)
+            assert(j.tasktype != None and j.tasktype != "")
+            taskClass = eval(j.tasktype)
+
             while line.strip() == '':
                 line = f.readline() # Skip empty line
 
             # Read task list from file
             headerLine = line
-            assert(headerLine.strip() == ','.join(Task.PROP_LIST))
+            # print headerLine.strip()
+            # print ','.join(taskClass.PROP_LIST)
+
+            assert(set(headerLine.strip().split(',')) == set(taskClass.PROP_LIST))
+            ordered_PROP_LIST = headerLine.strip().split(',')
+            # Use the order defined in task file
 
             line = f.readline()
             while line:
-                t = Task()
+                t = taskClass()
+                t.PROP_LIST = ordered_PROP_LIST
                 t.parseFromLine(line)
+                t.outputFolder = j.outputFolder
                 tasks.append(t)
                 line = f.readline()
 
@@ -77,55 +99,49 @@ class Job:
         count = 0 # Number of generated images
         # Execute task
         for t in self.tasks:
-            t.execute(self.outputFolder)
+            t.execute()
 
             count += 1
             if limit and count >= limit:  # Limit the number of generation, handy for debug
                 break
 
 class Task:
+    # PROP_LIST = [
+    #     'rowId',
+    #     'backgroundId',
+    #     'frameId',
+    #     'clothId',
+    #     'mode' # i:image, j:joint, d:depth, p:part
+    # ]
     PROP_LIST = [
         'rowId',
-        'backgroundId',
-        'frameId',
-        'clothId',
-        'mode' # i:image, j:joint, d:depth, p:part
+        'mode'
     ]
     def __init__(self):
-        pass
+        self.mode = 'ipjd'
 
-    @classmethod
-    def header(cls):
-        return ','.join(Task.PROP_LIST)
+    def header(self):
+        return ','.join(self.PROP_LIST)
 
     def parseFromLine(self, line):
-        cols = line.split(',')
-        for i in range(len(Task.PROP_LIST)):
-            setattr(self, Task.PROP_LIST[i], cols[i])
-        self.frameId = int(self.frameId) # Explict conversion
-        self.rowId = int(self.rowId)
-        self.clothId = int(self.clothId)
-        self.backgroundId = int(self.backgroundId)
+        cols = line.strip().split(',')
+        for i in range(len(self.PROP_LIST)):
+            setattr(self, self.PROP_LIST[i], cols[i])
+        # self.frameId = int(self.frameId) # Explict conversion
+        # self.rowId = int(self.rowId)
+        # self.clothId = int(self.clothId)
+        # self.backgroundId = int(self.backgroundId)
 
     def serilizeToLine(self):
-        cols = [str(getattr(self, v)) for v in Task.PROP_LIST]
+        cols = [str(getattr(self, v)) for v in self.PROP_LIST]
         line = ','.join(cols)
         return line
 
-    def execute(self, outputFolder):
-        # TODO: timing this script to boost speed
-        self.outputFolder = outputFolder
 
-        self.prefix = 'im%04d' % (self.rowId) # Let it start from 1
-
-        self.setPose()
-        self.setCloth()
-        self.setBackground()
-
-        self.render()
 
 
     def render(self):
+        ''' Share between task types '''
         from tenon.render import render
 
         if 'i' in self.mode:
@@ -150,7 +166,7 @@ class Task:
     def serializeJointInfo(self, filename, joints):
         import os
         folder = os.path.split(filename)[0]
-        print(folder)
+
         if not os.path.isdir(folder):
             os.makedirs(folder)
         with open(filename, 'w') as f:
@@ -160,16 +176,53 @@ class Task:
 
     def setPose(self):
         import tenon.animate # TODO: check speed issue
-        joints = tenon.animate.toFrame(self.frameId)
+        joints = tenon.animate.toFrame(int(self.frameId))
         self.pose = joints
 
     def setCloth(self): # The protocol of setting cloth
         import tenon.cloth
-        tenon.cloth.changeClothById(tenon.cloth.ClothType.TShirt, self.clothId)
+        tenon.cloth.changeClothById(tenon.cloth.ClothType.TShirt, int(self.clothId))
 
     def setBackground(self): # The protocol of setting background
         import tenon.background
-        tenon.background.setINRIA(self.backgroundId)
+        tenon.background.setINRIA(int(self.backgroundId))
+
+class LSP3Dtask(Task):
+    PROP_LIST = Task.PROP_LIST + ['LSPPoseId']
+    def __init__(self):
+        Task.__init__(self)
+        # Define the property list for this task
+
+    def setPose(self):
+        print('Animate to Pose %d' % int(self.LSPPoseId))
+        import tenon.pose
+        tenon.pose.animateCP(int(self.LSPPoseId))
+        # tenon.pose.animateEditBone(int(self.LSPPoseId))
+        # This is for debugging
+
+    def execute(self):
+        # TODO: timing this script to boost speed
+        self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
+
+        self.setPose()
+
+        self.render()
+
+class MocapTask(Task):
+    PROP_LIST = Task.PROP_LIST + ['backgroundId', 'frameId', 'clothId']
+
+    def __init__(self):
+        Task.__init__(self)
+
+    def execute(self):
+        # TODO: timing this script to boost speed
+        self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
+
+        self.setPose()
+        self.setCloth()
+        self.setBackground()
+
+        self.render()
 
 def ls():
     ''' Utility to list all available task '''
@@ -187,8 +240,10 @@ def ls():
     for ii in range(len(csvFiles)):
         csvFile = csvFiles[ii]
         j = Job.parseFromFile(csvFile)
-        print('%d: %s' % (ii, csvFiles[ii]))
-        print('Name:%s, Date:%s, Num:%d' % (j.name, j.date, len(j.tasks)))
+        info('%d: %s' % (ii, csvFiles[ii]))
+        info('Name:%s, Date:%s, Num:%d' % (j.name, j.date, len(j.tasks)))
+        for p in getStrPropList(j.tasks[0]):
+            info('%s:%s' % (p, getattr(j.tasks[0], p)))
         
         js.append(j)
     return js
