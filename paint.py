@@ -26,20 +26,22 @@ def paintModeOff(obj):
 		_materialOff(slot.material)
 
 def _materialOn(material):
-	material.use_shadeless = True
-	material.use_vertex_color_paint = True
+	if material:
+		material.use_shadeless = True
+		material.use_vertex_color_paint = True
 
-	material.use_transparency = False
-	for i in range(len(material.use_textures)): 
-		material.use_textures[i] = False
+		material.use_transparency = False
+		for i in range(len(material.use_textures)): 
+			material.use_textures[i] = False
 
 def _materialOff(material):
-	material.use_shadeless = False
-	material.use_vertex_color_paint = False
+	if material:
+		material.use_shadeless = False
+		material.use_vertex_color_paint = False
 
-	material.use_transparency = True
-	for i in range(len(material.use_textures)): 
-		material.use_textures[i] = True
+		material.use_transparency = True
+		for i in range(len(material.use_textures)): 
+			material.use_textures[i] = True
 
 
 
