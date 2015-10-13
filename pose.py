@@ -86,8 +86,22 @@ def animateCP(id):
 
 
 def readJointLocCSV(csvFile):
-    import pandas as pd
-    pts = pd.read_csv(csvFile)
+    print('Read joint information from csv file %s' % csvFile)
+    # import pandas as pd
+    # pts = pd.read_csv(csvFile)
+
+    px = []; py = []; pz = []
+    with open(csvFile) as f:
+        headline = f.readline()
+        assert(headline.strip().lower() == 'x,y,z')
+
+        line = f.readline()
+        while line:
+            [x,y,z] = line.strip().split(',')
+            px.append(float(x))
+            py.append(float(y))
+            pz.append(float(z))
+            line = f.readline()
 
     order = [
         'root',
@@ -111,13 +125,13 @@ def readJointLocCSV(csvFile):
 
     # Load joint location from csv file.    
     loc = {}
-    for i in range(len(pts.x)):
+    for i in range(len(px)):
         jointName = order[i]
 
         # Swap y an z axis
-        x = pts.x[i] - pts.x[0]
-        y = pts.z[i] - pts.z[0]
-        z = pts.y[i] - pts.y[0] # swap y and z
+        x = px[i] - px[0]
+        y = pz[i] - pz[0]
+        z = py[i] - py[0] # swap y and z
         z = -z
         loc[jointName] = mathutils.Vector((x, y, z))
 
