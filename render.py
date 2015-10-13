@@ -32,20 +32,22 @@ class Render():
         # Need to setup the scene following this tutorial
         # bpy.context.scene.use_nodes = True
         tree = bpy.context.scene.node_tree
-        depthNode = tree.nodes.get('Invert')
-        compositeNode = tree.nodes.get('Composite')
+        if tree:
+            depthNode = tree.nodes.get('Invert')
+            compositeNode = tree.nodes.get('Composite')
 
-        links = tree.links
-        links.new(depthNode.outputs[0], compositeNode.inputs[0])
+            links = tree.links
+            links.new(depthNode.outputs[0], compositeNode.inputs[0])
 
     def _disableDepth(self):
         # bpy.context.scene.use_nodes = True
         tree = bpy.context.scene.node_tree
-        renderLayersNode = tree.nodes.get('Render Layers')
-        compositeNode = tree.nodes.get('Composite')
+        if tree:
+            renderLayersNode = tree.nodes.get('Render Layers')
+            compositeNode = tree.nodes.get('Composite')
 
-        links = tree.links
-        links.new(renderLayersNode.outputs[0], compositeNode.inputs[0])
+            links = tree.links
+            links.new(renderLayersNode.outputs[0], compositeNode.inputs[0])
 
     def depthModeOn(self):
         ''' Render depth of the scene. To use this function, the scene needs to be pre-configured. '''

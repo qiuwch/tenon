@@ -60,40 +60,35 @@ def testPose():
     setBoneYZXEuler(forearm, 90, 0, 0)
     setBoneYZXEuler(upper_arm, 43, 54, 65)
 
-def createControlPoint():
-    names = [ # Order does not matter
-        'ankle.r',
-        'knee.r',
-        'hip.r',
-        'hip.l',
-        'knee.l',
-        'ankle.l',
-        'wrist.r',
-        'elbow.r',
-        'shoulder.r',
-        'shoulder.l',
-        'elbow.l',
-        'wrist.l',
-        'neck',
-        'headTop',
-        'root'
-    ]
-    for jointName in names:
+def animateCP(id):
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    # Load data from exported csv file
+    loc = readJointLocCSV('/q/cache/lsp_2d_3d/%04d.csv' % id)
+
+    obj = bpy.data.objects['human_model']
+    root = obj.pose.bones['root'].head
+
+    jointNames = loc.keys()
+    # for i in range(len(jointNames)):
+    for jointName in jointNames:
+        # jointName = jointNames[i]
         controlEmpty = bpy.data.objects.get(jointName)
         if controlEmpty == None:
             bpy.ops.object.empty_add()
             controlEmpty = bpy.context.object
             controlEmpty.name = jointName
 
-    # setup joint constraint manually
+        pt = loc[jointName]
+        controlEmpty.location.x = pt.x + root.x
+        controlEmpty.location.y = pt.y + root.y
+        controlEmpty.location.z = pt.z + root.z
 
-def animateCP(id):
-    # Load data from exported csv file
+
+def readJointLocCSV(csvFile):
     import pandas as pd
-    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
-    # Swap y an z axis
+    pts = pd.read_csv(csvFile)
 
-    # The mapping from csv to empty
     order = [
         'root',
         'neck',
@@ -113,76 +108,74 @@ def animateCP(id):
         'ankle.r',
         'foot.r'
     ]
-    obj = bpy.data.objects['human_model']
-    root = obj.pose.bones['root'].head
-    #
-    for i in range(len(pts.x)):
-        jointName = order[i]
-        controlEmpty = bpy.data.objects.get(jointName)
-        if controlEmpty == None:
-            # bpy.ops.object.empty_add()
-            # controlEmpty = bpy.context.object
-            # controlEmpty.name = jointName
-            continue
-        # 
-        ptx = pts.x[i] - pts.x[0]
-        pty = pts.y[i] - pts.y[0]
-        ptz = pts.z[i] - pts.z[0]
-        controlEmpty.location.x = ptx + root.x
-        controlEmpty.location.y = ptz + root.y# Swap y and z
-        controlEmpty.location.z = - pty + root.z
-
-
-def loadJointLocCSV(csvFile):
-    import pandas as pd
-    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
-    
-    pass
-
-
-def createTestEditBone(id):
-    # The mapping from csv to empty
-    # Use this function with armature_visualize.blend
-    order = [
-        'root',
-        'neck',
-        'shoulder.l',
-        'elbow.l',
-        'wrist.l',
-        'shoulder.r',
-        'elbow.r',
-        'wrist.r',
-        'headTop',
-        'hip.l',
-        'knee.l',
-        'ankle.l',
-        'foot.l',
-        'hip.r',
-        'knee.r',
-        'ankle.r',
-        'foot.r'
-    ]
-
-    import pandas as pd
-    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
 
     # Load joint location from csv file.    
     loc = {}
     for i in range(len(pts.x)):
         jointName = order[i]
-        loc[jointName] = mathutils.Vector((pts.x[i], pts.y[i], pts.z[i]))
 
+        # Swap y an z axis
+        x = pts.x[i] - pts.x[0]
+        y = pts.z[i] - pts.z[0]
+        z = pts.y[i] - pts.y[0] # swap y and z
+        z = -z
+        loc[jointName] = mathutils.Vector((x, y, z))
+
+    # Create a tail for rotation control
+    vec1 = loc['hip.l'] - loc['root']
+    vec2 = loc['hip.r'] - loc['root']
+    back = loc['neck'] - loc['root']
+
+    vec = cross(vec1, vec2)
+    if (dot(vec, back) > 0):
+        print(dot(vec, back))
+        vec = -vec
+
+    cosTheta = dot(vec, back) / (vec.length * back.length)
+    # print(cosTheta)
+    vec = vec - vec.length * cosTheta * back / back.length  # Make the vec perpendicular to back
+    # print(vec.length)
+
+    vec = normalize(vec)
+    loc['tail'] = loc['root'] + 5 * vec
+
+    return loc
+
+def dot(vec1, vec2):
+    return vec1.dot(vec2)
+    # return vec1.x * vec2.x + vec1.y * vec2.y + vec1.z * vec2.z
+
+def cross(vec1, vec2):
+    return vec1.cross(vec2)
+    # x = vec1.y * vec2.z - vec1.z * vec2.y
+    # y = vec1.x * vec2.z - vec1.z * vec2.x
+    # z = vec1.x * vec2.y - vec1.y * vec2.x
+    # vec = mathutils.Vector(x, y, z)
+    # return vec 
+
+def normalize(vec):
+    vec.normalize()
+    return vec
+    # length = math.sqrt(vec.x ** 2 + vec.y ** 2 + vec.z ** 2)
+    # newVec = mathutils.Vector(vec.x / length, vec.y / length, vec.z / length)
+    # return newVec
+
+
+def animateEditBone(id):
+    bpy.context.scene.objects.active = bpy.data.objects['Armature']
+    bpy.ops.object.mode_set(mode='EDIT')
+
+    # The mapping from csv to empty
+    # Use this function with armature_visualize.blend
+    loc = readJointLocCSV('/q/cache/lsp_2d_3d/%04d.csv' % id)
     # Generate edit bones to show joint location
 
     editBones = [
         'back-bone', 'R-shldr', 'R-Uarm', 'R-Larm', 
         'L-shldr', 'L-Uarm', 'L-Larm', 'head',
         'R-hip', 'R-Uleg', 'R-Lleg', 'R-feet', 
-        'L-hip', 'L-Uleg', 'L-Lleg', 'L-feet'
+        'L-hip', 'L-Uleg', 'L-Lleg', 'L-feet', 'tail'
     ];
-
-    import pandas as pd
-    pts = pd.read_csv('/q/cache/lsp_2d_3d/%04d.csv' % id)
 
     # Mapping between bone and joint
     editBoneJointMapping = {
@@ -217,7 +210,9 @@ def createTestEditBone(id):
         'L-Lleg.head': 'knee.l',
         'L-Lleg.tail': 'ankle.l',
         'L-feet.head': 'ankle.l',
-        'L-feet.tail': 'foot.l'
+        'L-feet.tail': 'foot.l',
+        'tail.head': 'root',
+        'tail.tail': 'tail'
     };
 
     for editBoneName in editBones:
