@@ -15,4 +15,4 @@ print(sys.version) # This is the python version. Do not mix python2 and 3 libs.
 def r(v):
     imp.reload(v)
 
-import tenon.task, tenon.pose
+import tenon.task, tenon.puppet
