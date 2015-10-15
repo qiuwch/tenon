@@ -95,13 +95,190 @@ def animateCP(id):
 
     bpy.context.scene.update()  # This is super important
 
-def retarget(loc):
+def getBoneLength():
+    def getRestJointLoc(boneName, jointType):
+        # Must get the location of edit bone here.
+        print(boneName)
+        obj = bpy.data.objects['human_model']
+        editBone = obj.data.edit_bones[boneName] # TODO: FIX this
+        if jointType == 'head':
+            loc = editBone.head
+        elif jointType == 'tail':
+            loc = editBone.tail
+        else:
+            loc = None
+        return loc
+
+    def computeDistance(loc1, loc2):
+        return (loc1 - loc2).length
+
+    def getBoneLength(pair): 
+        names = pair[0]
+
+        [name1, sep, jointType1] = names[0].rpartition('.')
+        loc1 = getRestJointLoc(name1, jointType1)
+
+        [name2, sep, jointType2] = names[1].rpartition('.')
+        loc2 = getRestJointLoc(name2, jointType2)
+
+        length = computeDistance(loc1, loc2)
+
+        return length
+
+    # Modify this to see which strategy is better
+    link = [
+        [('root.head', 'neck.head'), (1, 2)],
+        [('neck.head', 'head.tail'), (2, 9)], # The number is orderId in 3D skeleton
+
+        [('neck.head', 'deltoid.R.tail'), (2, 6)],
+        [('upper_arm.fk.R.head', 'upper_arm.fk.R.tail'), (6, 7)],
+        [('forearm.fk.R.head', 'forearm.fk.R.tail'), (7, 8)],
+
+        [('neck.head', 'deltoid.L.tail'), (2, 3)],
+        [('upper_arm.fk.L.head', 'upper_arm.fk.L.tail'), (3, 4)],
+        [('forearm.fk.L.head', 'forearm.fk.L.tail'), (4, 5)],
+
+        [('neck.head', 'thigh.fk.R.head'), (2, 14)],        
+        [('thigh.fk.R.head', 'thigh.fk.R.tail'), (14, 15)],
+        [('shin.fk.R.head', 'shin.fk.R.tail'), (15, 16)],
+        [('shin.fk.R.tail', 'toe.fk.R.tail'), (16, 17)],
+
+        [('neck.head', 'thigh.fk.L.head'), (2, 10)],
+        [('thigh.fk.L.head', 'thigh.fk.L.tail'), (10, 11)],
+        [('shin.fk.L.head', 'shin.fk.L.tail'), (11, 12)],
+        [('shin.fk.L.tail', 'toe.fk.L.tail'), (12, 13)]
+    ]
+
+    bpy.context.scene.objects.active = bpy.data.objects['human_model']
+    bpy.ops.object.mode_set(mode='EDIT')
+
+    for bone in link:
+        boneLength = getBoneLength(bone) # This is buggy
+        print(boneLength)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+def retargetJointLocation(loc):
+    def getJointLoc(boneName, jointType):
+        # Must get the location of edit bone here.
+        print(boneName)
+        obj = bpy.data.objects['human_model']
+        # bpy.context.scene.objects.active = bpy.data.objects['human_model']
+        # bpy.ops.object.mode_set(mode='EDIT')
+        # bpy.context.scene.update()
+        poseBone = obj.pose.bones[boneName]
+        if jointType == 'head':
+            loc = poseBone.head # Why the bone of poseBone is over shot a lot?
+        elif jointType == 'tail':
+            loc = poseBone.tail
+        else:
+            loc = None
+        # editBone = obj.data.edit_bones[boneName] # TODO: FIX this
+        # if jointType == 'head':
+        #     loc = editBone.head
+        # elif jointType == 'tail':
+        #     loc = editBone.tail
+        # else:
+        #     loc = None
+        # bpy.ops.object.mode_set(mode='OBJECT')
+        print(loc)
+        return loc
+
+    def computeDistance(loc1, loc2):
+        return (loc1 - loc2).length
+
+    def getBoneLength(pair): 
+        names = pair[0]
+
+        [name1, sep, jointType1] = names[0].rpartition('.')
+        loc1 = getJointLoc(name1, jointType1)
+
+        [name2, sep, jointType2] = names[1].rpartition('.')
+        loc2 = getJointLoc(name2, jointType2)
+
+        length = computeDistance(loc1, loc2)
+
+        return length
+
+    print('Retarget the joint location to fit the human model')
     # Remapping the skeleton structure for this human.
+    jointList = [
+        'root',
+        'neck',
+        'shoulder.l',
+        'elbow.l',
+        'wrist.l',
+        'shoulder.r',
+        'elbow.r',
+        'wrist.r',
+        'headTop',
+        'hip.l',
+        'knee.l',
+        'ankle.l',
+        'foot.l',
+        'hip.r',
+        'knee.r',
+        'ankle.r',
+        'foot.r'
+    ]
+
+    # Modify this to see which strategy is better
+    link = [
+        [('root.head', 'neck.head'), (1, 2)],
+        [('neck.head', 'head.tail'), (2, 9)], # The number is orderId in 3D skeleton
+
+        [('neck.head', 'deltoid.R.tail'), (2, 6)],
+        [('upper_arm.fk.R.head', 'upper_arm.fk.R.tail'), (6, 7)],
+        [('forearm.fk.R.head', 'forearm.fk.R.tail'), (7, 8)],
+
+        [('neck.head', 'deltoid.L.tail'), (2, 3)],
+        [('upper_arm.fk.L.head', 'upper_arm.fk.L.tail'), (3, 4)],
+        [('forearm.fk.L.head', 'forearm.fk.L.tail'), (4, 5)],
+
+        [('neck.head', 'thigh.fk.R.head'), (2, 14)],        
+        [('thigh.fk.R.head', 'thigh.fk.R.tail'), (14, 15)],
+        [('shin.fk.R.head', 'shin.fk.R.tail'), (15, 16)],
+        [('shin.fk.R.tail', 'toe.fk.R.tail'), (16, 17)],
+
+        [('neck.head', 'thigh.fk.L.head'), (2, 10)],
+        [('thigh.fk.L.head', 'thigh.fk.L.tail'), (10, 11)],
+        [('shin.fk.L.head', 'shin.fk.L.tail'), (11, 12)],
+        [('shin.fk.L.tail', 'toe.fk.L.tail'), (12, 13)]
+    ]
+
+    newLoc = {}
+    newLoc['root'] = loc['root'] # Start from here
+    # Do normalization for each bone
+
+    # Switch to edit mode
+    # bpy.context.scene.objects.active = bpy.data.objects['human_model']
+    # bpy.ops.object.mode_set(mode='EDIT')
+    # bpy.context.scene.update()
+
+    for bone in link:
+        boneLength = getBoneLength(bone) # This is buggy
+
+        joint1 = jointList[bone[1][0]-1] # TODO: change this ugly code later
+        joint2 = jointList[bone[1][1]-1]
+        src = loc[joint1]
+        tgt = loc[joint2]
+
+        vec = tgt - src
+        # print('%.2f' % vec.length)
+        vec.normalize()
+
+        newSrc = newLoc[joint1]
+        newTgt = newSrc + vec * boneLength
+        print('%.2f %.2f' % (vec.length, boneLength))
+
+        newLoc[joint2] = newTgt
+
+    # Switch back to object mode
+    # bpy.ops.object.mode_set(mode='OBJECT')
 
     return newLoc
 
 
-def readJointLocCSV(csvFile):
+def readJointLocCSV(csvFile, retarget=True):
     if not os.path.isfile(csvFile):
         print('Joint file %s does not exist.' % csvFile)
         return None
@@ -113,7 +290,7 @@ def readJointLocCSV(csvFile):
     px = []; py = []; pz = []; jointNames = []
     with open(csvFile) as f:
         headline = f.readline()
-        assert(headline.strip().lower() == 'x,y,z')
+        assert(headline.strip().lower() == 'name,x,y,z')
 
         line = f.readline()
         while line:
@@ -136,6 +313,24 @@ def readJointLocCSV(csvFile):
         z = -z
         loc[jointName] = mathutils.Vector((x, y, z))
 
+    if retarget:
+        loc = retargetJointLocation(loc)
+
+    # Post-processing
+    # Add tail
+    addTail(loc)
+
+    # Move the shoulder down
+    vec = loc['neck'] - loc['root']
+    offset = - vec * 0.3
+    offJoints = ['shoulder.l', 'shoulder.r', 'elbow.l', 'elbow.r', 'wrist.l', 'wrist.r']
+    for j in offJoints:
+        loc[j] += offset
+
+    return loc
+
+def addTail(loc):
+    # Use this to add a tail bone to structure
     # Create a tail for rotation control
     vec1 = loc['hip.l'] - loc['root']
     vec2 = loc['hip.r'] - loc['root']
@@ -153,8 +348,6 @@ def readJointLocCSV(csvFile):
 
     vec = normalize(vec)
     loc['tail'] = loc['root'] + 5 * vec
-
-    return loc
 
 def dot(vec1, vec2):
     return vec1.dot(vec2)
@@ -176,18 +369,23 @@ def normalize(vec):
     # return newVec
 
 
-def animateEditBone(id):
+def animateEditBone(id, normalize=True):
     bpy.context.scene.objects.active = bpy.data.objects['Armature']
     bpy.ops.object.mode_set(mode='EDIT')
 
     # The mapping from csv to empty
     # Use this function with armature_visualize.blend
-    loc = readJointLocCSV(tenon.config.lspJointFile % id)
+    if normalize:
+        loc = readJointLocCSV(tenon.config.lspJointFile % id)
+    else:
+        loc = readJointLocCSV(tenon.config.lspJointFile % id, retarget=False)
+
     if not loc:
         return
 
+
     # Generate edit bones to show joint location
-    editBones = [
+    editBones = [ # I got these names from the poseprior dataset
         'back-bone', 'R-shldr', 'R-Uarm', 'R-Larm', 
         'L-shldr', 'L-Uarm', 'L-Larm', 'head',
         'R-hip', 'R-Uleg', 'R-Lleg', 'R-feet', 
