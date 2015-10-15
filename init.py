@@ -1,5 +1,5 @@
 # Script to load tenon into blender
-import sys, imp, re, os
+import sys, imp
 
 # Space between = is required
 PWD = '/q/run/'
@@ -15,16 +15,4 @@ print(sys.version) # This is the python version. Do not mix python2 and 3 libs.
 def r(v):
     imp.reload(v)
 
-# if __name__ == '__main__':
-if '__file__' in globals():
-    with open('./init.py') as f:
-        data = f.read()
-        data = re.sub('\nPWD = .*', '\nPWD = "%s"' % os.path.abspath('..'), data)
-        print(data)
-else:
-    # Import for the convinience of interactive shell
-    import tenon.demo as td
-    from tenon.render import render
-    from tenon.config import *
-    from tenon.bpyutil import *
-    import tenon.pose, tenon.export, tenon.task
+import tenon.task, tenon.pose
