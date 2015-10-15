@@ -2,7 +2,7 @@ comment : Fix one factor at a time to see the effect
 date : 10.01
 name : FixFactor
 tasktype: MocapTask
-outputFolder : /q/cache/fixFactorPose
+outputFolder : /q/cache/pose_eval
 rowId,backgroundId,frameId,clothId,mode
 0,229,0,0,ipjd
 1,1130,0,1,ipjd

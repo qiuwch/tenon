@@ -1,7 +1,7 @@
 comment : This is the first batch task definition
 date : 10.01
 name : ClothParsing
-outputFolder : /q/cache/clothParsing
+outputFolder : /q/cache/cloth_parsing
 tasktype: MocapTask
 rowId,backgroundId,frameId,clothId,mode
 0,1153,0,15,ipjd
