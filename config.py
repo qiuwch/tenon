@@ -4,6 +4,7 @@ INRIA_DIR = '//background/INRIA/'
 RENDER_OUTPUT_DIR = '/q/cache/render_output/'
 TMP_DIR = '/q/cache/'
 JOINT_FILENAME = RENDER_OUTPUT_DIR + '/joint-PC.csv' # person centric annotation
+lspJointFile = '/q/cache/lsp_2d_3d/joint_3d/2015101415_v2/%04d.csv' # This is unnormalized version
 
 selectedBones = [
 	# 1. name of the bone
