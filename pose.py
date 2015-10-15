@@ -1,7 +1,10 @@
 # Script to manipulate human pose
+import os
 import bpy
 import mathutils
 import math
+import tenon.config
+
 def rest():
     """ Set the human body to rest pose """
 
@@ -61,10 +64,13 @@ def testPose():
     setBoneYZXEuler(upper_arm, 43, 54, 65)
 
 def animateCP(id):
+    # Make the retarget code here.
     bpy.ops.object.mode_set(mode='OBJECT')
 
     # Load data from exported csv file
-    loc = readJointLocCSV('/q/cache/lsp_2d_3d/%04d.csv' % id)
+    loc = readJointLocCSV(tenon.config.lspJointFile % id)
+    if not loc:
+        return
 
     obj = bpy.data.objects['human_model']
     root = obj.pose.bones['root'].head
@@ -80,53 +86,48 @@ def animateCP(id):
             controlEmpty.name = jointName
 
         pt = loc[jointName]
-        controlEmpty.location.x = pt.x + root.x
-        controlEmpty.location.y = pt.y + root.y
-        controlEmpty.location.z = pt.z + root.z
+        # controlEmpty.location.x = pt.x + root.x
+        # controlEmpty.location.y = pt.y + root.y
+        # controlEmpty.location.z = pt.z + root.z
+        controlEmpty.location.x = pt.x
+        controlEmpty.location.y = pt.y
+        controlEmpty.location.z = pt.z
+
+    bpy.context.scene.update()  # This is super important
+
+def retarget(loc):
+    # Remapping the skeleton structure for this human.
+
+    return newLoc
 
 
 def readJointLocCSV(csvFile):
+    if not os.path.isfile(csvFile):
+        print('Joint file %s does not exist.' % csvFile)
+        return None
+
     print('Read joint information from csv file %s' % csvFile)
     # import pandas as pd
     # pts = pd.read_csv(csvFile)
 
-    px = []; py = []; pz = []
+    px = []; py = []; pz = []; jointNames = []
     with open(csvFile) as f:
         headline = f.readline()
         assert(headline.strip().lower() == 'x,y,z')
 
         line = f.readline()
         while line:
-            [x,y,z] = line.strip().split(',')
+            [name,x,y,z] = line.strip().split(',')
             px.append(float(x))
             py.append(float(y))
             pz.append(float(z))
+            jointNames.append(name)
             line = f.readline()
-
-    order = [
-        'root',
-        'neck',
-        'shoulder.l',
-        'elbow.l',
-        'wrist.l',
-        'shoulder.r',
-        'elbow.r',
-        'wrist.r',
-        'headTop',
-        'hip.l',
-        'knee.l',
-        'ankle.l',
-        'foot.l',
-        'hip.r',
-        'knee.r',
-        'ankle.r',
-        'foot.r'
-    ]
 
     # Load joint location from csv file.    
     loc = {}
     for i in range(len(px)):
-        jointName = order[i]
+        jointName = jointNames[i]
 
         # Swap y an z axis
         x = px[i] - px[0]
@@ -181,9 +182,11 @@ def animateEditBone(id):
 
     # The mapping from csv to empty
     # Use this function with armature_visualize.blend
-    loc = readJointLocCSV('/q/cache/lsp_2d_3d/%04d.csv' % id)
-    # Generate edit bones to show joint location
+    loc = readJointLocCSV(tenon.config.lspJointFile % id)
+    if not loc:
+        return
 
+    # Generate edit bones to show joint location
     editBones = [
         'back-bone', 'R-shldr', 'R-Uarm', 'R-Larm', 
         'L-shldr', 'L-Uarm', 'L-Larm', 'head',
