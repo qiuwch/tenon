@@ -32,6 +32,9 @@ class Render():
         # Need to setup the scene following this tutorial
         # bpy.context.scene.use_nodes = True
         tree = bpy.context.scene.node_tree
+        if not tree:
+            print('Error: this scene does not support depth mode.')
+
         if tree:
             depthNode = tree.nodes.get('Invert')
             compositeNode = tree.nodes.get('Composite')
@@ -110,6 +113,7 @@ class Render():
 
         # self.scene.render.filepath = self.outputFolder + filename
         self.scene.render.filepath = filename
+        self.scene.update()
 
         # TODO: improve the logging system
         print('Render to file %s' % self.scene.render.filepath)
