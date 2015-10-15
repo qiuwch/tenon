@@ -1,5 +1,11 @@
 # Script to batch run tasks defined in a data file.
 # TODO: Consider rewriting it with protobuf
+import os
+
+def strTimeStamp():
+    import time
+    timeStamp = time.strftime('%Y%m%d%H%M', time.localtime())
+    return timeStamp
 
 def getStrPropList(obj):
     return [v for v in dir(obj) if not v.startswith('__') and type(getattr(obj, v)) == str]
@@ -68,6 +74,10 @@ class Job:
             assert(j.tasktype != None and j.tasktype != "")
             taskClass = eval(j.tasktype)
 
+            j.outputFolder += '/%s/' % strTimeStamp() # Put into a subfolder with timestamp
+            if not os.path.isdir(j.outputFolder):
+                os.mkdir(j.outputFolder)
+
             while line.strip() == '':
                 line = f.readline() # Skip empty line
 
@@ -96,6 +106,13 @@ class Job:
         return j
 
     def run(self, limit=None):
+        import tenon.info
+        timeStamp = strTimeStamp()
+
+        logger = tenon.info.Logger(self.outputFolder + timeStamp + 'info.txt')
+        logger.info(tenon.info.cameraInfo())
+        logger.info(tenon.info.blendInfo())
+
         count = 0 # Number of generated images
         # Execute task
         for t in self.tasks:
