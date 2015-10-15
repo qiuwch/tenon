@@ -2,10 +2,17 @@ function lsp_convert_format(origDir)
     % Crop the image, to make it suitable for LSP format
     % Convert rendered images to blender format, crop images and save annotations to mat file
     cropDir = [origDir '/crop/'];
+    mkdir(cropDir);
+
     numFiles = dir([origDir '/imgs/*.png']);
 
-    for fileid = 0:(length(numFiles)-1)
-        fprintf('%d/%d\n', fileid+1, length(numFiles));
+    for type = {'imgs', 'depth', 'paint'}
+        type = type{1};
+        mkdir(sprintf('%s/%s/', cropDir, type));
+    end
+
+    for fileid = 1:length(numFiles)
+        fprintf('%d/%d\n', fileid, length(numFiles));
         % Get annotation
         jointFile = sprintf([origDir '/joint/im%04d.csv'], fileid);
         [X, Y] = read_joint_info(jointFile);
