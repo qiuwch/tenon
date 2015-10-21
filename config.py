@@ -6,6 +6,9 @@ TMP_DIR = '/q/cache/'
 JOINT_FILENAME = RENDER_OUTPUT_DIR + '/joint-PC.csv' # person centric annotation
 lspJointFile = '/q/cache/lsp_2d_3d/joint_3d/2015101415_v2/%04d.csv' # This is unnormalized version
 
+# human_model = 'human_model'
+human_model = 'man_in_short'
+
 selectedBones = [
 	# 1. name of the bone
 	# 2. use tail or head location of the bone
@@ -43,16 +46,12 @@ connections = [
     ('thigh.fk.R.head', 'upper_arm.fk.R.head')
 ]
 
-def pathHelper(relpath):
-    path = '../scenes' + relpath
+def bpyPathHelper(relpath):
+    # Convert blender relpath to something accessible to other code
+    try:
+        import bpy
+        path = bpy.path.abspath(relpath)
+    except:
+        path = relpath.replace('//', '../scenes/')
     return path
     
-def getClothList(): # TODO combine this with task execution
-    jpgs = glob.glob(pathHelper('//textures/*.jpg'))
-    pngs = glob.glob(pathHelper('//textures/*.png'))
-    files = jpgs + pngs
-    return files
-
-def getBGList():
-    BGlist = glob.glob(pathHelper('//background/INRIA/*.jpg'))
-    return BGlist
