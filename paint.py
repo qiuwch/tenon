@@ -1,29 +1,33 @@
 import bpy
+import tenon.config
 # This script can generate detailed human part labeling.
 # Paint the model first
 
-body = bpy.data.objects.get('human_model:Body')
-jeans = bpy.data.objects.get('human_model:jeans01')
-hair = bpy.data.objects.get('human_model:mhair02')
-tshirt = bpy.data.objects.get('human_model:tshirt02')
+body = bpy.data.objects.get('%s:Body' % tenon.config.human_model)
+jeans = bpy.data.objects.get('%s:jeans01' % tenon.config.human_model)
+short = bpy.data.objects.get('%s:short01' % tenon.config.human_model)
+hair = bpy.data.objects.get('%s:mhair02' % tenon.config.human_model)
+tshirt = bpy.data.objects.get('%s:tshirt02' % tenon.config.human_model)
 
 def humanPaintOn():
-	for v in [body, jeans, hair, tshirt]:
+	for v in [body, jeans, hair, tshirt, short]:
 		paintModeOn(v)
 
 def humanPaintOff():
-	for v in [body, jeans, hair, tshirt]:
+	for v in [body, jeans, hair, tshirt, short]:
 		paintModeOff(v)
 
 def paintModeOn(obj):
 	''' Switch the render to paint mode '''
-	for slot in obj.material_slots:
-		_materialOn(slot.material)
+	if obj:
+		for slot in obj.material_slots:
+			_materialOn(slot.material)
 
 def paintModeOff(obj):
 	''' Disable Paint Mode, reverse previous operation '''	
-	for slot in obj.material_slots:
-		_materialOff(slot.material)
+	if obj:
+		for slot in obj.material_slots:
+			_materialOff(slot.material)
 
 def _materialOn(material):
 	if material:
