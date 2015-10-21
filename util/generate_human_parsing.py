@@ -12,12 +12,12 @@ def generateSeq144():
     ''' Generate BVH Sequence 144_43, All types of clothes, Randomly pick a background '''
     j = Job()
 
-    j.clothFolder = '//textures/cloth/color/' # It seems blender is not good at handling . and ..
+    j.clothFolder = '//textures/cloth/upper/' # It seems blender is not good at handling . and ..
     tenon.cloth.setClothFolder(j.clothFolder)
     nCloth = len(tenon.cloth.clothTextures)
 
-    j.pantFolder = '//textures/cloth/color/' # It seems blender is not good at handling . and ..
-    tenon.cloth.setPantFolder(j.pantFolder)
+    j.pantsFolder = '//textures/cloth/lower/' # It seems blender is not good at handling . and ..
+    tenon.cloth.setPantsFolder(j.pantsFolder)
     nPant = len(tenon.cloth.pantTextures)
 
     j.bgFolder = '//background/INRIA/'

@@ -12,7 +12,7 @@ textureConfig = {
 };
 
 clothTextures = []
-pantTextures = []
+pantsTextures = []
 
 def setClothFolder(clothFolder):
 	global clothTextures
@@ -24,25 +24,25 @@ def setClothFolder(clothFolder):
 	clothTextures = jpgs + pngs
 	print('Cloth folder is set to %s, num: %d' % (clothFolder, len(clothTextures)))
 
-def setPantFolder(pantFolder):
-	global pantTextures
+def setPantsFolder(pantsFolder):
+	global pantsTextures
 
-	pantFolder = bpyPathHelper(pantFolder)
-	jpgs = glob.glob('%s/*.jpg' % pantFolder)
-	pngs = glob.glob('%s/*.png' % pantFolder)
+	pantsFolder = bpyPathHelper(pantsFolder)
+	jpgs = glob.glob('%s/*.jpg' % pantsFolder)
+	pngs = glob.glob('%s/*.png' % pantsFolder)
 
-	pantTextures = jpgs + pngs
-	print('Cloth folder is set to %s, num: %d' % (pantFolder, len(pantTextures)))
+	pantsTextures = jpgs + pngs
+	print('Cloth folder is set to %s, num: %d' % (pantsFolder, len(pantsTextures)))
 
 
 def changeClothById(clothType, id):
 	global clothTextures
-	global pantTextures
+	global pantsTextures
 	if clothType == ClothType.TShirt or clothType == ClothType.LongTShirt:
 		textures = clothTextures
 
 	if clothType == ClothType.Short or clothType == ClothType.Jeans:
-		textures = pantTextures
+		textures = pantsTextures
 
 	''' Change clothes by given id '''
 	if id < 0 or id > (len(textures) - 1):

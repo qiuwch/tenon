@@ -131,8 +131,8 @@ class Job:
         import tenon.cloth
         tenon.cloth.setClothFolder(self.clothFolder)
 
-        if getattr(self, 'pantFolder'):
-            tenon.cloth.setPantFolder(self.pantFolder)
+        if getattr(self, 'pantsFolder'):
+            tenon.cloth.setPantsFolder(self.pantsFolder)
 
         import tenon.background
         tenon.background.setBGFolder(self.bgFolder)
