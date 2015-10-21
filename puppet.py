@@ -2,7 +2,6 @@
 import os
 import bpy
 import mathutils
-import math
 import tenon.config
 
 # Generate edit bones to show joint location
@@ -89,7 +88,7 @@ def animateCP(id):
     if not loc:
         return
 
-    obj = bpy.data.objects['human_model']
+    obj = bpy.data.objects[tenon.config.human_model]
     root = obj.pose.bones['root'].head
 
     bpy.ops.object.mode_set(mode='OBJECT')
@@ -114,7 +113,7 @@ def getReferenceArmature():
     # Get the bone length defined by the armature I want to target to
     def getRestJointLoc(boneName, jointType):
         # Must get the location of edit bone here.
-        obj = bpy.data.objects['human_model']
+        obj = bpy.data.objects[tenon.config.human_model]
         editBone = obj.data.edit_bones[boneName]
         if jointType == 'head':
             loc = editBone.head
@@ -141,7 +140,7 @@ def getReferenceArmature():
 
         return length
 
-    bpy.context.scene.objects.active = bpy.data.objects['human_model']
+    bpy.context.scene.objects.active = bpy.data.objects[tenon.config.human_model]
     bpy.ops.object.mode_set(mode='EDIT')
 
     refArmature = {}
@@ -216,40 +215,47 @@ def readJointLocCSV(csvFile, retarget=True):
     # Add tail
     addTail(loc)        
 
-    if retarget:
-        loc = retargetJointLocation(loc)
-
-    # Post-processing
-
     # Move the shoulder down
+    # Do this before length normalization, because this operation can affect bone length
     vec = loc['neck'] - loc['root']
-    offset = - vec * 0.32
-    offJoints = ['shoulder.l', 'shoulder.r', 'elbow.l', 'elbow.r', 'wrist.l', 'wrist.r']
+    offset = vec * 0.32
+    # offset = -vec * 0
+    # offJoints = ['shoulder.l', 'shoulder.r', 'elbow.l', 'elbow.r', 'wrist.l', 'wrist.r']
+    offJoints = ['neck', 'headTop']
     for j in offJoints:
         loc[j] += offset
+
+    # Make the bone length fit the human model
+    if retarget:
+        loc = retargetJointLocation(loc)
 
     return loc
 
 def addTail(loc):
     # Use this to add a tail bone to structure
     # Create a tail for rotation control
-    vec1 = loc['shoulder.l'] - loc['shoulder.r']
+    # vec1 = loc['shoulder.l'] - loc['shoulder.r']
+    print('Add a tail bone to the armature')
+    vec1 = loc['shoulder.r'] - loc['shoulder.l']
     vec2 = loc['neck'] - loc['root']
 
     vec = cross(vec1, vec2)
-    orintationVec = [
-        loc['hip.r'] - loc['root'],
-        loc['hip.l'] - loc['root'],
-        # loc['knee.l'] - loc['hip.l'],
-        # loc['knee.r'] - loc['hip.r']
-        loc['foot.l'] - loc['ankle.l'],
-        loc['foot.r'] - loc['ankle.r']
-    ]
 
-    sameDirection = [dot(v, vec)/(v.length * vec.length) for v in orintationVec]
+    # It is not necessary to check the tail orientation, since we know the left and right of the joints
 
-    if sum(sameDirection) > 0:
-        vec = -vec
+    # orintationVec = [
+    #     loc['hip.r'] - loc['root'],
+    #     loc['hip.l'] - loc['root'],
+    #     # loc['knee.l'] - loc['hip.l'],
+    #     # loc['knee.r'] - loc['hip.r']
+    #     loc['foot.l'] - loc['ankle.l'],
+    #     loc['foot.r'] - loc['ankle.r']
+    # ]
+
+    # sameDirection = [dot(v, vec)/(v.length * vec.length) for v in orintationVec]
+
+    # if sum(sameDirection) > 0:
+    #     vec = -vec
 
     vec = normalize(vec)
     loc['tail'] = loc['root'] + 5 * vec
