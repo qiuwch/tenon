@@ -2,6 +2,7 @@
 # TODO: rewrite this script.
 import bpy
 import bpy_extras
+import tenon.config
 
 selectedBones = {
     'shin.fk.L': [0, 0, 1],
@@ -40,7 +41,7 @@ def world2camera(location):
 
 def createMarker():
     ''' Create an UV sphere for each joint, then assign the material to the joints. '''
-    obj = bpy.data.objects['human_model']
+    obj = bpy.data.objects[tenon.config.human_model]
 
     for bone in obj.pose.bones:
         if not bone.name in selectedBones.keys(): # Ignore not related joints

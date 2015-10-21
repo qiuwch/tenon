@@ -1,6 +1,6 @@
 # Utility script to export 3d joint location to txt file
 import bpy
-import math
+import tenon.config
 from tenon.config import selectedBones, connections
 
 version = 'v4'
@@ -57,7 +57,7 @@ def export3dJoints(filename):
 
     print(version)
     """ Export the joint 3d locations to a text file """
-    obj = bpy.data.objects['human_model']
+    obj = bpy.data.objects[tenon.config.human_model]
 
     f = open(filename, 'w')
 
@@ -99,7 +99,7 @@ def restPose():
 
 def boneLength():
     def getJointLoc(boneName, jointType):
-        obj = bpy.data.objects['human_model']
+        obj = bpy.data.objects[tenon.config.human_model]
         poseBone = obj.pose.bones[boneName]
         if jointType == 'head':
             loc = poseBone.head

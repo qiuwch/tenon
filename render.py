@@ -1,6 +1,6 @@
 import bpy
-import os
 import tenon.paint
+import tenon.config
 from tenon.config import RENDER_OUTPUT_DIR
 
 class Render():
@@ -123,7 +123,7 @@ class Render():
         from tenon.skeleton import world2camera
         from tenon.config import selectedBones
 
-        obj = bpy.data.objects['human_model']
+        obj = bpy.data.objects[tenon.config.human_model]
         joints = [] # Return joint position of this frame
         for boneInfo in selectedBones:
             boneName = boneInfo[0]
