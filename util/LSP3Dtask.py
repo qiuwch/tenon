@@ -1,12 +1,13 @@
 # Task should be able to serialize to files and read from file.
 # For each task should define the variables related to this task
 import sys
-sys.path.append('..')
+sys.path.append('../..')
+import tenon.cloth, tenon.background
+from tenon.task import LSP3Dtask, Job
 
 from datetime import datetime
 import copy
-from task import LSP3Dtask, Job
-
+import random
 
 
 def generate():
@@ -15,13 +16,24 @@ def generate():
 
     tasks = []
 
+    j = Job()
+
+    j.clothFolder = '//textures/cloth/color/' # It seems blender is not good at handling . and ..
+    tenon.cloth.setClothFolder(j.clothFolder)
+    nCloth = len(tenon.cloth.clothTextures)
+
+    j.bgFolder = '//background/INRIA/'
+    tenon.background.setBGFolder(j.bgFolder)
+    nBG = len(tenon.background.bgFiles)
+
     # Fix cloth, random background, for each pose
     for i in range(1, 2001):
         t = copy.copy(defTask)
         t.LSPPoseId = i
+        t.clothId = random.randrange(0, nCloth)
+        t.backgroundId = random.randrange(0, nBG)
         tasks.append(t)
 
-    j = Job()
     j.name = 'LSP2D3D'
     now = datetime.now(); j.date = '%02d.%02d' % (now.month, now.day)
     j.comment = 'Use 2D joint annotation of LSP to manipulate human model'
