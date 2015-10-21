@@ -1,10 +1,10 @@
 # Change background of scene
 
-import bpy
 import glob
-from tenon.config import INRIA_DIR
+from tenon.config import bpyPathHelper
 
-def setBackground(filename):
+def changeBGbyFilename(filename):
+	import bpy
 	""" Set background of the scene"""
 	abspath = bpy.path.abspath(filename)
 	basename = bpy.path.basename(abspath)
@@ -13,13 +13,22 @@ def setBackground(filename):
 		img = bpy.data.images.load(abspath); 
 	bpy.data.textures['bg'].image = img
 
+bgFiles = []
 
-def INRIAfileList():
-	INRIAfiles = glob.glob(bpy.path.abspath(INRIA_DIR) + '*.jpg')
-    # TODO: avoid glob each time
-	return INRIAfiles
+def setBGFolder(bgFolder):
+	global bgFiles
 
-def setINRIA(id):
+	bgFolder = bpyPathHelper(bgFolder)
+	jpgs = glob.glob('%s/*.jpg' % bgFolder)
+	pngs = glob.glob('%s/*.png' % bgFolder)
+
+	bgFiles = jpgs + pngs
+	print('Background folder is set to %s, num: %d' % (bgFolder, len(bgFiles)))
+
+def changeBGbyId(id):
+	global bgFiles
+
 	""" Set background with INRIA dataset """
-	files = INRIAfileList()
-	setBackground(files[id])
+	filename = bgFiles[id]
+	print('Set background to %s' % filename)
+	changeBGbyFilename(filename)
