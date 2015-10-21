@@ -18,8 +18,21 @@ class Job:
         'name',
         'date',
         'outputFolder', 
+        'clothFolder',
+        'bgFolder',
         # TODO: Check consistency, 'blendFile',
     ]
+
+    def __str__(self):
+        objStr = ''
+        objStr += 'Name:%s, Date:%s, Num:%d\n' % (self.name, self.date, len(self.tasks))
+        for p in getStrPropList(self.tasks[0]):
+            objStr += '%s:%s\n' % (p, getattr(self.tasks[0], p))
+        return objStr
+
+    def __repr__(self):
+        return self.__str__()
+
 
     def __init__(self):
         pass
@@ -27,7 +40,7 @@ class Job:
     def validate(self):
         # Check whether this is a valid job
         for prop in Job.requiredProp: # Make sure this file is valid
-            assert(prop in dir(self))
+            assert prop in dir(self), 'Job: property %s is required but missing.' % prop
 
         assert(len(self.tasks) != 0)
 
@@ -75,9 +88,6 @@ class Job:
             taskClass = eval(j.tasktype)
 
             j.outputFolder += '/%s/' % strTimeStamp() # Put into a subfolder with timestamp
-            if not os.path.isdir(j.outputFolder):
-                os.mkdir(j.outputFolder)
-
             while line.strip() == '':
                 line = f.readline() # Skip empty line
 
@@ -86,7 +96,8 @@ class Job:
             # print headerLine.strip()
             # print ','.join(taskClass.PROP_LIST)
 
-            assert(set(headerLine.strip().split(',')) == set(taskClass.PROP_LIST))
+            assert set(headerLine.strip().split(',')) == set(taskClass.PROP_LIST), '%s not equal %s' % (headerLine, str(taskClass.PROP_LIST))
+
             ordered_PROP_LIST = headerLine.strip().split(',')
             # Use the order defined in task file
 
@@ -106,12 +117,25 @@ class Job:
         return j
 
     def run(self, limit=None):
+        if not os.path.isdir(self.outputFolder):
+            os.mkdir(self.outputFolder)
+
         import tenon.info
         timeStamp = strTimeStamp()
 
         logger = tenon.info.Logger(self.outputFolder + timeStamp + 'info.txt')
         logger.info(tenon.info.cameraInfo())
         logger.info(tenon.info.blendInfo())
+
+        # Set the environment
+        import tenon.cloth
+        tenon.cloth.setClothFolder(self.clothFolder)
+
+        if getattr(self, 'pantFolder'):
+            tenon.cloth.setPantFolder(self.pantFolder)
+
+        import tenon.background
+        tenon.background.setBGFolder(self.bgFolder)
 
         count = 0 # Number of generated images
         # Execute task
@@ -190,30 +214,28 @@ class Task:
             for j in joints:
                 f.write('%s,%s\n' % (j[0], ','.join([str(v) for v in j[1]])))
 
-
-    def setPose(self):
-        import tenon.animate # TODO: check speed issue
-        joints = tenon.animate.toFrame(int(self.frameId))
-        self.pose = joints
-
     def setCloth(self): # The protocol of setting cloth
         import tenon.cloth
         tenon.cloth.changeClothById(tenon.cloth.ClothType.TShirt, int(self.clothId))
 
+    def setPant(self):
+        import tenon.cloth
+        tenon.cloth.changeClothById(tenon.cloth.ClothType.Short, int(self.pantId))  # TODO: this is a quick hack, fix this later.
+
     def setBackground(self): # The protocol of setting background
         import tenon.background
-        tenon.background.setINRIA(int(self.backgroundId))
+        tenon.background.changeBGbyId(int(self.backgroundId))
 
 class LSP3Dtask(Task):
-    PROP_LIST = Task.PROP_LIST + ['LSPPoseId']
+    PROP_LIST = Task.PROP_LIST + ['LSPPoseId', 'clothId', 'backgroundId']
     def __init__(self):
         Task.__init__(self)
         # Define the property list for this task
 
     def setPose(self):
         print('Animate to Pose %d' % int(self.LSPPoseId))
-        import tenon.pose
-        tenon.pose.animateCP(int(self.LSPPoseId))
+        import tenon.puppet
+        tenon.puppet.animateCP(int(self.LSPPoseId))
         # tenon.pose.animateEditBone(int(self.LSPPoseId))
         # This is for debugging
 
@@ -222,8 +244,34 @@ class LSP3Dtask(Task):
         self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
 
         self.setPose()
+        self.setCloth()
+        self.setBackground()
 
         self.render()
+
+class HumanParsingTask(Task):
+    PROP_LIST = Task.PROP_LIST + ['backgroundId', 'frameId', 'clothId', 'pantId']
+
+    def __init__(self):
+        Task.__init__(self)
+
+    def execute(self):
+        # TODO: timing this script to boost speed
+        self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
+
+        self.setPose()
+        self.setCloth()
+        self.setPant()
+        self.setBackground()
+
+        self.render()
+
+    def setPose(self):
+        import tenon.animate # TODO: check speed issue
+        joints = tenon.animate.toFrame(int(self.frameId))
+        self.pose = joints
+
+
 
 class MocapTask(Task):
     PROP_LIST = Task.PROP_LIST + ['backgroundId', 'frameId', 'clothId']
@@ -240,6 +288,14 @@ class MocapTask(Task):
         self.setBackground()
 
         self.render()
+
+    def setPose(self):
+        import tenon.animate # TODO: check speed issue
+        joints = tenon.animate.toFrame(int(self.frameId))
+        self.pose = joints
+
+
+
 
 def ls():
     ''' Utility to list all available task '''
@@ -258,9 +314,7 @@ def ls():
         csvFile = csvFiles[ii]
         j = Job.parseFromFile(csvFile)
         info('%d: %s' % (ii, csvFiles[ii]))
-        info('Name:%s, Date:%s, Num:%d' % (j.name, j.date, len(j.tasks)))
-        for p in getStrPropList(j.tasks[0]):
-            info('%s:%s' % (p, getattr(j.tasks[0], p)))
+        info(str(j))
         
         js.append(j)
     return js
