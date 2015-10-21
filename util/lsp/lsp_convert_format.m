@@ -52,8 +52,8 @@ function lsp_convert_format(origDir)
             imwrite(crop, crop_imfname);
 
             % Save annotation
-            joints(1, :, fileid+1) = U;
-            joints(2, :, fileid+1) = V;
+            joints(1, :, fileid) = U; % Fix a critical BUG of file index !!
+            joints(2, :, fileid) = V;
         end
     end
     save([cropDir 'joints-PC.mat'], 'joints');
