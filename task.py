@@ -258,6 +258,10 @@ class HumanParsingTask(Task):
     def execute(self):
         # TODO: timing this script to boost speed
         self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
+        outputFile = '%s/%s.png' % (self.outputFolder, self.prefix)
+        if os.path.isfile(outputFile):
+            print('Skip render exist file %s' % outputFile)
+            pass
 
         self.setPose()
         self.setCloth()
