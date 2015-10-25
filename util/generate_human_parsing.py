@@ -18,7 +18,7 @@ def generateSeq144():
 
     j.pantsFolder = '//textures/cloth/lower/' # It seems blender is not good at handling . and ..
     tenon.cloth.setPantsFolder(j.pantsFolder)
-    nPant = len(tenon.cloth.pantTextures)
+    nPant = len(tenon.cloth.pantsTextures)
 
     j.bgFolder = '//background/INRIA/'
     tenon.background.setBGFolder(j.bgFolder)
