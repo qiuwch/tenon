@@ -1,5 +1,6 @@
 # Script to load tenon into blender
 import sys, imp
+import bpy
 
 # Space between = is required
 PWD = '/q/run/'
@@ -15,4 +16,14 @@ print(sys.version) # This is the python version. Do not mix python2 and 3 libs.
 def r(v):
     imp.reload(v)
 
-import tenon.task, tenon.puppet
+# Setup the logging for this session
+import logging
+debugFile = bpy.path.abspath('//debug.log')
+print('Log is saved to %s' % debugFile)
+logging.basicConfig(filename=debugFile,level=logging.DEBUG)
+logging.info('Test message.')
+# TODO: add timestamp to the filename
+
+import tenon.task
+import tenon.puppet as pp
+import tenon.scene as sc
