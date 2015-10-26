@@ -28,6 +28,7 @@ selectedBones = [
     ('neck', 'head')
 ]
 
+# This is moved to puppet.py
 # Define the skeleton
 connections = [
     # Leg
