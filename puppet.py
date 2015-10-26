@@ -4,6 +4,7 @@ import bpy
 import mathutils
 import tenon.config
 import logging
+from tenon.core import Models
 
 def animateEditBone(id, normalize=True):
     # The mapping from csv to empty
@@ -37,7 +38,7 @@ def animateCP(id):
     if not loc:
         return
 
-    obj = bpy.data.objects[tenon.config.human_model]
+    obj = Models.humanModel()
     root = obj.pose.bones['root'].head
 
     bpy.ops.object.mode_set(mode='OBJECT')
@@ -228,7 +229,7 @@ class Retarget:
         # Get the bone length defined by the armature I want to target to
         def getRestJointLoc(boneName, jointType):
             # Must get the location of edit bone here.
-            obj = bpy.data.objects[tenon.config.human_model]
+            obj = Models.humanModel()
             editBone = obj.data.edit_bones[boneName]
             if jointType == 'head':
                 loc = editBone.head
@@ -255,7 +256,7 @@ class Retarget:
 
             return length
 
-        bpy.context.scene.objects.active = bpy.data.objects[tenon.config.human_model]
+        bpy.context.scene.objects.active = Models.humanModel()
         bpy.ops.object.mode_set(mode='EDIT')
 
         refArmature = {}
@@ -268,24 +269,6 @@ class Retarget:
         return refArmature
 
 
-def humanModel():
-    # Return the human model of this scene
-    keys = bpy.data.armatures.keys()
-    logging.debug('Get %d armatures %s' % (len(keys), keys))
-
-    models = []
-    for k in keys:
-        humanModel = bpy.data.objects.get(k)
-        if humanModel:
-            logging.debug('Model %s exists' % k)
-            models.append(humanModel)
-        else:
-            logging.debug('Model %s not exist' % k)
-
-    if len(models) != 1:
-        logging.error('%d is invalid number of human models' % len(models))
-
-    return models[0]
 
 
 class ControlPoint:

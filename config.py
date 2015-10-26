@@ -7,7 +7,7 @@ JOINT_FILENAME = RENDER_OUTPUT_DIR + '/joint-PC.csv' # person centric annotation
 lspJointFile = '/q/cache/lsp_2d_3d/joint_3d/2015101415_v2/%04d.csv' # This is unnormalized version
 
 # human_model = 'human_model'
-human_model = 'man_in_short'
+# human_model = 'man_in_short'
 
 selectedBones = [
 	# 1. name of the bone

@@ -1,13 +1,12 @@
-import bpy
-import tenon.config
+from tenon.core import Models
 # This script can generate detailed human part labeling.
 # Paint the model first
 
-body = bpy.data.objects.get('%s:Body' % tenon.config.human_model)
-jeans = bpy.data.objects.get('%s:jeans01' % tenon.config.human_model)
-short = bpy.data.objects.get('%s:short01' % tenon.config.human_model)
-hair = bpy.data.objects.get('%s:mhair02' % tenon.config.human_model)
-tshirt = bpy.data.objects.get('%s:tshirt02' % tenon.config.human_model)
+body = Models.bodyMesh()
+jeans = Models.lowerCloth()
+short = Models.lowerCloth()
+hair = Models.hair()
+tshirt = Models.upperCloth()
 
 def humanPaintOn():
 	for v in [body, jeans, hair, tshirt, short]:

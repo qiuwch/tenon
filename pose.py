@@ -1,8 +1,7 @@
 # Script to manipulate human pose
-import bpy
 import mathutils
 import math
-import tenon.config
+from tenon.core import Models
 
 def rest():
     """ Set the human body to rest pose """
@@ -15,7 +14,7 @@ def rest():
     # bpy.ops.pose.loc_clear()
     # bpy.ops.pose.scale_clear()
 
-    obj = bpy.data.objects[tenon.config.human_model]
+    obj = Models.humanModel()
     for bone in obj.pose.bones:
         bone.matrix_basis = mathutils.Matrix() # Set it to identity matrix
 
@@ -24,7 +23,7 @@ def TPose():
     version = 'v3'
     print(version)
 
-    obj = bpy.data.objects[tenon.config.human_model]
+    obj = Models.humanModel()
     for poseBone in obj.pose.bones:
         poseBone.matrix_basis = mathutils.Matrix() # Set it to identity matrix
         # poseBone.bone.matrix_local = mathutils.Matrix() # this is very wrong
@@ -45,7 +44,7 @@ def TPose():
 
 def testPose():
     ''' Only change the forearem '''
-    human = bpy.data.objects[tenon.config.human_model]
+    human = Models.humanModel()
 
     forearm = human.pose.bones['forearm.fk.L']
     upper_arm = human.pose.bones['upper_arm.fk.L']
