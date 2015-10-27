@@ -35,37 +35,36 @@ class LightSource:
 		lamp = bpy.data.lamps.get(self.name)
 		logging.debug('Set lamp %s energy to %f', self.name, self.energy)
 		lamp.energy = self.energy
-		logging.debug('The lamp %s energy is %f', self.name, lamp.energy)
 
 
-class SceneLight: # Define the light configuration for this scene
-	def __init__(self):
-		self.lightConfig = [] # Contains a bunch of light sources
+# class SceneLight: # Define the light configuration for this scene
+# 	def __init__(self):
+# 		self.lightConfig = [] # Contains a bunch of light sources
 
 
 
-	def setupBlenderScene(self):
-		''' Create the lighting of the scene according to its configuration
-		Easier to start from scratch than manipulating current setting
-		'''
-		import bpy
+# 	def setupBlenderScene(self):
+# 		''' Create the lighting of the scene according to its configuration
+# 		Easier to start from scratch than manipulating current setting
+# 		'''
+# 		import bpy
 
-		def clearBlenderLights():
-			''' It is hard to write unit test for blender scripts '''
-			lamps =  bpy.data.lamps.values()
+# 		def clearBlenderLights():
+# 			''' It is hard to write unit test for blender scripts '''
+# 			lamps =  bpy.data.lamps.values()
 
-			oldMode = bpy.context.mode
-			bpy.ops.object.mode_set(mode='OBJECT')
-			for v in lamps:
-				bpy.data.objects[v.name].select = True
-				bpy.ops.object.delete()
-			bpy.ops.object.mode_set(mode=oldMode)
+# 			oldMode = bpy.context.mode
+# 			bpy.ops.object.mode_set(mode='OBJECT')
+# 			for v in lamps:
+# 				bpy.data.objects[v.name].select = True
+# 				bpy.ops.object.delete()
+# 			bpy.ops.object.mode_set(mode=oldMode)
 
 
 
 
 def roughPrintArray(arr):
-	# Print the array in a not very exact way for testing
+	# Print the array in a not very exact way for doctest
 	appArr = [round(v, 3) for v in arr]
 	print(appArr)
 
@@ -111,15 +110,30 @@ class LightingConfig:
 		y = r * math.sin(az)
 		return [x, y, z]
 
-def createLighting(lightConfig=None):
-	if not lightConfig:
-		logging.info('Create circle lighting environment')
-		lightConfig = LightingConfig.randomCircleConfig(z = 10)
+class Lighting:
+	@classmethod
+	def setup(cls, lightConfig=None):
+		if not lightConfig:
+			logging.info('Create circle lighting environment')
+			lightConfig = LightingConfig.randomCircleConfig(z = 0)
 
-	logging.info('Create blender lights')
-	for light in lightConfig:
-		light.createBlenderLight()
+		logging.info('Create blender lights')
+		for light in lightConfig:
+			light.createBlenderLight()
 
+def l23setup():
+	# Setup the scene for l23 task, this can setup a default scene of blender to a working scene.
+	# Minimal human labor is required
+
+	# Setup background
+	print('Setup background node')
+
+	# Setup lighting
+	Lighting.setup()
+
+	# Setup pose constraint
+	import tenon.puppet as pp
+	pp.Constraint.setup()
 
 
 if __name__ == "__main__":
