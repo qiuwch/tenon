@@ -20,10 +20,15 @@ def r(v):
 import logging
 debugFile = bpy.path.abspath('//debug.log')
 print('Log is saved to %s' % debugFile)
+# Remove all handlers associated with the root logger object.
+for handler in logging.root.handlers[:]: # Reset the existing config
+    logging.root.removeHandler(handler)
+
 logging.basicConfig(filename=debugFile,level=logging.DEBUG)
 logging.info('Test message.')
 # TODO: add timestamp to the filename
 
-import tenon.task
+import tenon.task as ta
 import tenon.puppet as pp
 import tenon.scene as sc
+from tenon.core import Models

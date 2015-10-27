@@ -122,7 +122,25 @@ class Render():
 
     def exportJoint(self):
         from tenon.skeleton import world2camera
-        from tenon.config import selectedBones
+
+        selectedBones = [
+            # 1. name of the bone
+            # 2. use tail or head location of the bone
+            ('thigh.fk.L', 'tail'), # ('shin.fk.L', 'head'),
+            ('thigh.fk.R', 'tail'), # easier for rotation
+            ('thigh.fk.L', 'head'),
+            ('thigh.fk.R', 'head'),
+            ('head', 'tail'),
+            ('shin.fk.L', 'tail'), # ('foot.fk.L', 'head'),
+            ('shin.fk.R', 'tail'), # ('foot.fk.R', 'head'),
+            ('forearm.fk.L', 'tail'), #('hand.fk.L', 'head'),
+            ('forearm.fk.R', 'tail'), # ('hand.fk.R', 'head'),
+            ('upper_arm.fk.L', 'tail'), # ('forearm.fk.R', 'head'),
+            ('upper_arm.fk.R', 'tail'), # ('forearm.fk.L', 'head'),
+            ('upper_arm.fk.L', 'head'),
+            ('upper_arm.fk.R', 'head'),
+            ('neck', 'head')
+        ]
 
         obj = Models.humanModel()
         joints = [] # Return joint position of this frame

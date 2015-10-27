@@ -1,5 +1,5 @@
 # Change background of scene
-
+# TODO: consider merge this with scene.py
 import glob
 from tenon.config import bpyPathHelper
 
