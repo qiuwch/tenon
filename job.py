@@ -1,6 +1,7 @@
 # Script to batch run tasks defined in a data file.
-# TODO: Consider rewriting it with protobuf
+# TODO: Consider rewriting it with protobuf, this is the most messy part of this project
 import os
+import logging
 
 def strTimeStamp():
     import time
@@ -9,9 +10,6 @@ def strTimeStamp():
 
 def getStrPropList(obj):
     return [v for v in dir(obj) if not v.startswith('__') and type(getattr(obj, v)) == str]
-
-def info(msg): # Use this to differentiate debug info with useful info
-    print(msg)
 
 class Job:
     requiredProp = [ # Required properties
@@ -117,12 +115,13 @@ class Job:
         return j
 
     def run(self, limit=None):
+        # Create output folder
         if not os.path.isdir(self.outputFolder):
             os.mkdir(self.outputFolder)
 
+        # Saving log of this job
         import tenon.info
         timeStamp = strTimeStamp()
-
         logger = tenon.info.Logger(self.outputFolder + timeStamp + 'info.txt')
         logger.info(tenon.info.cameraInfo())
         logger.info(tenon.info.blendInfo())
@@ -179,8 +178,6 @@ class Task:
         return line
 
 
-
-
     def render(self):
         ''' Share between task types '''
         from tenon.render import render
@@ -226,28 +223,7 @@ class Task:
         import tenon.background
         tenon.background.changeBGbyId(int(self.backgroundId))
 
-class LSP3Dtask(Task):
-    PROP_LIST = Task.PROP_LIST + ['LSPPoseId', 'clothId', 'backgroundId']
-    def __init__(self):
-        Task.__init__(self)
-        # Define the property list for this task
 
-    def setPose(self):
-        print('Animate to Pose %d' % int(self.LSPPoseId))
-        import tenon.puppet
-        tenon.puppet.animateCP(int(self.LSPPoseId))
-        # tenon.pose.animateEditBone(int(self.LSPPoseId))
-        # This is for debugging
-
-    def execute(self):
-        # TODO: timing this script to boost speed
-        self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
-
-        self.setPose()
-        self.setCloth()
-        self.setBackground()
-
-        self.render()
 
 class HumanParsingTask(Task):
     PROP_LIST = Task.PROP_LIST + ['backgroundId', 'frameId', 'clothId', 'pantId']
@@ -260,7 +236,7 @@ class HumanParsingTask(Task):
         self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
         outputFile = '%s/%s.png' % (self.outputFolder, self.prefix)
         if os.path.isfile(outputFile):
-            print('Skip render exist file %s' % outputFile)
+            logging.info('Skip render exist file %s' % outputFile)
             pass
 
         self.setPose()
@@ -317,8 +293,6 @@ def ls():
     for ii in range(len(csvFiles)):
         csvFile = csvFiles[ii]
         j = Job.parseFromFile(csvFile)
-        info('%d: %s' % (ii, csvFiles[ii]))
-        info(str(j))
         
         js.append(j)
     return js
