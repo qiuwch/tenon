@@ -38,8 +38,8 @@ def animateCP(id):
     if not loc:
         return
 
-    obj = Models.humanModel()
-    root = obj.pose.bones['root'].head
+    # obj = Models.humanModel()
+    # root = obj.pose.bones['root'].head
 
     bpy.ops.object.mode_set(mode='OBJECT')
     jointNames = loc.keys()
@@ -53,6 +53,8 @@ def animateCP(id):
             controlEmpty.name = jointName
 
         pt = loc[jointName]
+        logging.debug('Move %s to %s' % (jointName, str(pt)))
+
         controlEmpty.location.x = pt.x
         controlEmpty.location.y = pt.y
         controlEmpty.location.z = pt.z
@@ -119,7 +121,7 @@ class Retarget:
         # Use this to add a tail bone to structure
         # Create a tail for rotation control
         # vec1 = loc['shoulder.l'] - loc['shoulder.r']
-        print('Add a tail bone to the armature')
+        logging.info('Add a tail bone to the armature')
         vec1 = loc['shoulder.r'] - loc['shoulder.l']
         vec2 = loc['neck'] - loc['root']
 
@@ -147,10 +149,10 @@ class Retarget:
     @classmethod
     def readJointLocCSV(cls, csvFile, retarget=True):
         if not os.path.isfile(csvFile):
-            print('Joint file %s does not exist.' % csvFile)
+            logging.error('Joint file %s does not exist.' % csvFile)
             return None
 
-        print('Read joint information from csv file %s' % csvFile)
+        logging.info('Read joint information from csv file %s' % csvFile)
 
         px = []; py = []; pz = []; jointNames = []
         with open(csvFile) as f:
@@ -199,7 +201,7 @@ class Retarget:
 
     @classmethod
     def retargetJointLocation(cls, loc):
-        print('Retarget the joint location to fit the human model')
+        logging.info('Retarget the joint location to fit the human model')
         newLoc = {}
         newLoc['root'] = loc['root'] # Start from here
         # Do normalization for each bone
@@ -269,14 +271,87 @@ class Retarget:
         return refArmature
 
 
+class Constraint:
+    controlPointNames = ['root', 'neck', 'shoulder.l', 'elbow.l', 'wrist.l', 'shoulder.r'
+        , 'elbow.r', 'wrist.r', 'headTop', 'hip.l', 'knee.l', 'ankle.l', 'foot.l'
+        , 'hip.r', 'knee.r', 'ankle.r', 'foot.r']
+
+    @classmethod
+    def createControlPoint(cls):
+        bpy.ops.object.mode_set(mode='OBJECT')
+        for p in cls.controlPointNames:
+            controlEmpty = bpy.data.objects.get(p)
+            if not controlEmpty:
+                bpy.ops.object.empty_add()
+                controlEmpty = bpy.context.object
+                controlEmpty.name = p  
+
+    def __init__(self):
+        self.boneName = ''
+        self.type = ''
+        self.target = ''
+        self.parameters = {}
+
+    def apply(self):
+        self.constraintName = '%s_%s' % (self.type, self.target)
+        model = Models.humanModel()
+        logging.info('Setting up constraint %s, %s' % (self.boneName, self.target))
+
+        bone = model.pose.bones.get(self.boneName)
+        if not bone:
+            logging.error('The bone %s can not be found' % self.boneName)
+
+        c = bone.constraints.get(self.constraintName)
+        if c:
+            logging.info('Constraint already exist')
+        else:
+            c = bone.constraints.new(self.type)
+
+        targetObject = bpy.data.objects.get(self.target)
+        if not targetObject:
+            logging.error('The target object %s can not be found' % self.target)
+        c.target = targetObject
+
+        for k in self.parameters:
+            logging.debug('Setup parameter %s:%s' % (k, self.parameters[k]))
+            if k not in dir(c):
+                logging.error('Parameter %s is not valid' % k)
+            else:
+                setattr(c, k, self.parameters[k])
+
+    @classmethod
+    def setup(cls):
+        constraints = [
+            # Set up constraints
+            ['root', 'root', 'COPY_LOCATION'],
+            ['root', 'tail', 'TRACK_TO', {'track_axis': 'TRACK_Y'}],
+            # ['root', 'headTop', 'Track To', {'track_axis': 'z'}]
+            ['root', 'headTop', 'LOCKED_TRACK', {'track_axis': 'TRACK_Z', 'lock_axis': 'LOCK_Y'}],
+            ['chest-1', 'neck', 'IK'],
+            ['deltoid.L', 'shoulder.l', 'IK', {'chain_count': 2}],
+            ['upper_arm.fk.L', 'elbow.l', 'IK', {'chain_count': 1}],
+            ['forearm.fk.L', 'wrist.l', 'IK', {'chain_count': 1}],
+            ['deltoid.R', 'shoulder.r', 'IK', {'chain_count': 2}],
+            ['upper_arm.fk.R', 'elbow.r', 'IK', {'chain_count': 1}],
+            ['forearm.fk.R', 'wrist.r', 'IK', {'chain_count': 1}],
+            ['thigh.fk.L', 'knee.l', 'IK', {'chain_count': 1}],
+            ['shin.fk.L', 'ankle.l', 'IK', {'chain_count': 1}],
+            ['thigh.fk.R', 'knee.r', 'IK', {'chain_count': 1}],
+            ['shin.fk.R', 'ankle.r', 'IK', {'chain_count': 1}]
+        ]
+
+        cls.createControlPoint()
+
+        for v in constraints:
+            c = Constraint()
+            c.boneName = v[0]
+            c.target = v[1]
+            c.type = v[2]
+            if len(v) == 4: # parameters is optional
+                c.parameters = v[3]
+            c.apply()
 
 
-class ControlPoint:
-    pass
-
-def linkControlPoint():
-    # Connect the control point with the skeleton
-    pass
     
 
 
