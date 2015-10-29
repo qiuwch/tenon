@@ -2,17 +2,22 @@
 import os
 import bpy
 import mathutils
-import tenon.config
 import logging
 from tenon.core import Models
 
-def animateEditBone(id, normalize=True):
+lspJointFile = [
+    '/q/cache/lsp_2d_3d/joint_3d/2015101415_v2/%04d.csv', # This is unnormalized version, version 2 of poseprior code
+    '/q/cache/lsp_2d_3d/joint_3d/2015101618_v3/%04d.csv' # version 2 of poseprior code, better weight
+]
+# TODO: try version 3 which is of a different weight
+
+def animateEditBone(id, normalize=True, version=0):
     # The mapping from csv to empty
     # Use this function with armature_visualize.blend
     if normalize:
-        loc = Retarget.readJointLocCSV(tenon.config.lspJointFile % id)
+        loc = Retarget.readJointLocCSV(lspJointFile[version] % id)
     else:
-        loc = Retarget.readJointLocCSV(tenon.config.lspJointFile % id, retarget=False)
+        loc = Retarget.readJointLocCSV(lspJointFile[version] % id, retarget=False)
 
     if not loc:
         return
@@ -31,10 +36,10 @@ def animateEditBone(id, normalize=True):
         editBone.tail = loc[tailJointName]
 
 
-def animateCP(id):
+def animateCP(id, version=0):
     # Make the retarget code here.
     # Load data from exported csv file
-    loc = Retarget.readJointLocCSV(tenon.config.lspJointFile % id)
+    loc = Retarget.readJointLocCSV(lspJointFile[version] % id)
     if not loc:
         return
 
@@ -274,7 +279,7 @@ class Retarget:
 class Constraint:
     controlPointNames = ['root', 'neck', 'shoulder.l', 'elbow.l', 'wrist.l', 'shoulder.r'
         , 'elbow.r', 'wrist.r', 'headTop', 'hip.l', 'knee.l', 'ankle.l', 'foot.l'
-        , 'hip.r', 'knee.r', 'ankle.r', 'foot.r']
+        , 'hip.r', 'knee.r', 'ankle.r', 'foot.r', 'tail']
 
     @classmethod
     def createControlPoint(cls):
@@ -282,7 +287,7 @@ class Constraint:
         for p in cls.controlPointNames:
             controlEmpty = bpy.data.objects.get(p)
             if not controlEmpty:
-                bpy.ops.object.empty_add()
+                bpy.ops.object.empty_add(radius=0.05)
                 controlEmpty = bpy.context.object
                 controlEmpty.name = p  
 
