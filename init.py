@@ -28,7 +28,7 @@ logging.basicConfig(filename=debugFile,level=logging.DEBUG)
 logging.info('Test message.')
 # TODO: add timestamp to the filename
 
-import tenon.task as ta
 import tenon.puppet as pp
 import tenon.scene as sc
+import tenon.job as jb
 from tenon.core import Models
