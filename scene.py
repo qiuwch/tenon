@@ -3,6 +3,7 @@ import logging
 import glob
 import os
 from tenon.config import bpyPathHelper
+import bpy
 
 def checkOp(ret):
 	assert 'FINISHED' in ret
@@ -22,7 +23,7 @@ class LightSource:
 		self.name = ''
 
 	def createBlenderLight(self):
-		import mathutils, bpy
+		import mathutils
 
 		obj = bpy.data.objects.get(self.name)
 		# It seems tricky to modify the lamp name, which needs to modify lamp and obj name together
@@ -112,13 +113,34 @@ class TextureChanger:
 			logging.error('Background is set to a non-exsiting file %s' % filename)
 
 		textureKey = cls.getTextureKey()
-		import bpy
+		if not textureKey:
+			logging.warning('Can not change texture for %s, no valid key' % cls.__name__)
+			return
+
 		textureImg = bpy.data.images[textureKey]
 		textureImg.filepath = bpy.path.relpath(filename)
 
 	@classmethod
+	def randomChange(cls):
+		import random
+		N = len(cls.textures)
+		if N == 0:
+			logging.error('No textures available for %s' % cls.__name__)
+			return
+
+		i = random.randrange(0, N)
+		filename = cls.textures[i]
+		cls.changeByFilename(filename)	
+
+	@classmethod
 	def changeById(cls, id):
 		''' Change clothes by given id '''
+		if isinstance(id, str):
+			if id.isdigit():
+				id = int(id)
+			else:
+				logging.error('Invaid input %s to changeById' % id)
+
 		if id < 0 or id > (len(cls.textures) - 1):
 			logging.error('Try changing pants to id %d, but index out of range' % id)
 		else:
@@ -127,12 +149,11 @@ class TextureChanger:
 
 	@classmethod
 	def getTextureKey(cls):
-		import bpy
 		# Check which one exists
 		isValid = [bpy.data.images.get(k) != None for k in cls.textureKeys]
 
 		if not True in isValid:
-			logging.error('Can not find a suitable key for pants')
+			logging.error('Can not find a suitable key for %s' % cls.__name__)
 			return None
 		else:
 			index = isValid.index(True)
@@ -145,33 +166,107 @@ class Pants(TextureChanger):
 	def setTestingFolder(cls):
 		cls.setFolder('//textures/cloth/upper/')
 
-class TShirt(TextureChanger):
-	textureKeys = ['tshirt02_texture.png']
+class Shirt(TextureChanger):
+	textureKeys = ['tshirt02_texture.png', 'tshirt_texture_white.png']
 
 	@classmethod
 	def setTestingFolder(cls):
 		cls.setFolder('//textures/cloth/lower/')
 
-class Background(TextureChanger):
+class Hair(TextureChanger):
+	textureKeys = ['male01_diffuse_black.png']
+
+class Skin(TextureChanger):
+	textureKeys = ['young_lightskinned_male_diffuse.png']
+
+class Bg(TextureChanger):
 	textureKeys = ['bg']
+
+	@classmethod
+	def setup(cls):
+		textureKey = cls.textureKeys[0]
+		bgTexture = bpy.data.textures.get(textureKey)
+		if not bgTexture:
+			logging.info('Create new background texture')
+			bgTexture = bpy.data.textures.new(textureKey, type='IMAGE')
+	
+		bgImg = bpy.data.images.get(textureKey)
+		if not bgImg:
+			logging.info('Create new background image')
+			bgImg = bpy.data.images.new(textureKey, width=10, height=10)
+
+		bgImg.source = 'FILE'
+		bgTexture.image = bgImg
+		bpy.data.worlds['World'].active_texture = bgTexture
+
+		# TODO: this is tricky, fix it later
+		bpy.data.worlds['World'].texture_slots[0].use_map_horizon = True
 
 	@classmethod
 	def setTestingFolder(cls):
 		cls.setFolder('//background/INRIA')
 
-def l23setup():
+class Camera():
+	@classmethod
+	def sceneCamera(cls):
+		ks = bpy.data.cameras.keys()
+		cams = [bpy.data.objects.get(k) for k in ks]
+		cams = [v for v in cams if v] # Remove none
+		""" Return camera of the scene """
+		# cam = bpy.data.objects.get('Camera')
+		if len(cams) == 0:
+			logging.info('No camera in the scene, create a new one')
+			scene = bpy.context.scene
+			cam = bpy.data.cameras.new('Camera') # The object may take a different name
+			camObj = bpy.data.objects.new(name=cam.name, object_data=cam)
+			scene.objects.link(camObj)
+			return camObj
+		else:
+			return cams[0]
+
+	@classmethod
+	def setPosAngle(cls, theta):
+		""" Set the position of scene camera """
+
+		# Change the camera position directly
+		import math
+		theta_rad = theta / 180.0 * math.pi
+
+		loc1 = cls.sceneCamera().location
+		radius = math.sqrt(loc1.x ** 2 + loc1.y ** 2)
+
+		x = math.sin(theta_rad) * radius
+		y = - math.cos(theta_rad) * radius
+
+		z = cls.sceneCamera().location.z
+		cls.sceneCamera().location = (x, y, z)
+
+	@classmethod
+	def set(cls, loc, rot):
+		cam = cls.sceneCamera()
+		if not cam:
+			logging.error('Can not find an active camera in the scene')			
+			return
+
+		import mathutils
+		cam.location = mathutils.Vector(loc)
+		cam.rotation_euler = mathutils.Euler(rot[0], rot[1])
+
+def setupL23():
 	# Setup the scene for l23 task, this can setup a default scene of blender to a working scene.
 	# Minimal human labor is required
 
-	# Setup background
-	print('Setup background node')
-
 	# Setup lighting
 	Lighting.setup()
+	Bg.setup()
+
+	Camera.set((0, -5, 0.7), ((1.4, 0, 0), 'XYZ'))
 
 	# Setup pose constraint
 	import tenon.puppet as pp
 	pp.Constraint.setup()
+	pp.animateCP(1)
+
 
 
 if __name__ == "__main__":
