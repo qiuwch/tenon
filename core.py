@@ -10,14 +10,16 @@ def getObject(objectName):
 	return obj
 
 class Models: # TODO: consider cache for here
-    def modelName():
+    @classmethod
+    def modelName(cls):
         keys = bpy.data.armatures.keys()
         logging.debug('Get %d armatures %s' % (len(keys), keys))
 
         modelNames = []
         for k in keys:
             humanModel = bpy.data.objects.get(k)
-            if humanModel:
+            humanBody = bpy.data.objects.get('%s:Body' % k)
+            if humanModel and humanBody:
                 logging.debug('Model %s exists' % k)
                 modelNames.append(k)
             else:
@@ -25,20 +27,26 @@ class Models: # TODO: consider cache for here
 
         if len(modelNames) != 1:
             logging.error('%d is invalid number of human models' % len(modelNames))
-
+            return ''
+            
         return modelNames[0]
 
-    def humanModel():
-    	return getObject(Models.modelName())
+    @classmethod
+    def humanModel(cls):
+    	return getObject(cls.modelName())
 
-    def bodyMesh():
-    	return getObject('%s:Body' % Models.modelName())
+    @classmethod
+    def bodyMesh(cls):
+    	return getObject('%s:Body' % cls.modelName())
 
-    def upperCloth():
-        return getObject('%s:short01' % Models.modelName())
+    @classmethod
+    def upperCloth(cls): # TODO: consider rewrite this, not robust
+        return getObject('%s:short01' % cls.modelName())
 
-    def lowerCloth():
-    	return getObject('%s:jeans01' % Models.modelName())
+    @classmethod
+    def lowerCloth(cls):
+    	return getObject('%s:jeans01' % cls.modelName())
 
-    def hair():
-    	return getObject('%s:mhair02' % Models.modelName())
+    @classmethod
+    def hair(cls):
+    	return getObject('%s:mhair02' % cls.modelName())
