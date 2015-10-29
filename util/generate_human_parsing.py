@@ -50,5 +50,32 @@ def generateSeq144():
     j.tasks = tasks
     j.save('../scenes/%02d.%02d_human_parsing.csv' % (now.month, now.day))
 
+class HumanParsingTask(Task):
+    PROP_LIST = Task.PROP_LIST + ['backgroundId', 'frameId', 'clothId', 'pantId']
+
+    def __init__(self):
+        Task.__init__(self)
+
+    def execute(self):
+        # TODO: timing this script to boost speed
+        self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
+        outputFile = '%s/%s.png' % (self.outputFolder, self.prefix)
+        if os.path.isfile(outputFile):
+            logging.info('Skip render exist file %s' % outputFile)
+            pass
+
+        self.setPose()
+        self.setCloth()
+        self.setPant()
+        self.setBackground()
+
+        self.render()
+
+    def setPose(self):
+        import tenon.animate # TODO: check speed issue
+        joints = tenon.animate.toFrame(int(self.frameId))
+        self.pose = joints
+
+
 if __name__ == '__main__':
     generateSeq144() # If run idenpendently, this script and be used to generate the task list

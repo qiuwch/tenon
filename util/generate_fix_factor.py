@@ -58,4 +58,26 @@ if __name__ == '__main__':
     generateFixFactor() 
 
 
+class MocapTask(Task):
+    PROP_LIST = Task.PROP_LIST + ['backgroundId', 'frameId', 'clothId']
+
+    def __init__(self):
+        Task.__init__(self)
+
+    def execute(self):
+        # TODO: timing this script to boost speed
+        self.prefix = 'im%04d' % (int(self.rowId) + 1) # TODO: Let it start from 1
+
+        self.setPose()
+        self.setCloth()
+        self.setBackground()
+
+        self.render()
+
+    def setPose(self):
+        import tenon.animate # TODO: check speed issue
+        joints = tenon.animate.toFrame(int(self.frameId))
+        self.pose = joints
+
+
 
