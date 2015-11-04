@@ -1,18 +1,23 @@
-baseFolder = '/q/cache/lsp_2d_3d/render_output/1028/%s/imgs/im%04d.png';
-mixFolder = '/q/cache/lsp_2d_3d/render_output/1028/mix/im%04d.png';
-folder = {'201510280116','201510280221','201510280331','201510280433','201510280535','201510280605'};
+baseFile = '/q/cache/lsp_2d_3d/render_output/%s/%s/im%04d.%s';
+mixFolder = '/q/tmp/mixfolder/%s/';
+mixFile = [mixFolder 'im%04d.%s'];
+
+blend = {'m_c_1'};
+types = {'imgs', 'depth', 'joint'};
+exts = {'png', 'png', 'csv'};
+for type = types
+    mkdir(sprintf(mixFolder, type{1}));
+end
 
 for i = 1:2000
-	m = randi(length(folder));
-	file = sprintf(baseFolder, folder{m}, i);
-	disp(file);
+	m = randi(length(blend));
 
-	if ~exist(file, 'file')
-		fprintf('Error: file %s not exist', file);
-		file = sprintf(baseFolder, folder{1}, i); % TODO: Check why some files not rendered
-	end
-
-
-	im = imread(file);
-	imwrite(im, sprintf(mixFolder, i));
+    for j = 1:length(types)
+%         if ~exist(file, 'file')
+%             fprintf('Error: file %s not exist', file);
+%             file = sprintf(baseFolder, folder{1}, i); % TODO: Check why some files not rendered
+%         end
+        file = sprintf(baseFile, blend{m}, types{j}, i, exts{j});
+        copyfile(file, sprintf(mixFile, types{j}, i, exts{j}));
+    end
 end

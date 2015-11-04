@@ -55,6 +55,9 @@ function lsp_convert_format(origDir)
             joints(1, :, fileid) = U; % Fix a critical BUG of file index !!
             joints(2, :, fileid) = V;
         end
+        
+        % Also generate the visualize folder, make sure the ground truth is
+        % correct
     end
     save([cropDir 'joints-PC.mat'], 'joints');
 end
