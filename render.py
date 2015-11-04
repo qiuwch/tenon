@@ -3,124 +3,153 @@ import tenon.paint
 import tenon.config
 from tenon.config import RENDER_OUTPUT_DIR
 from tenon.core import Models
+import logging
 
-class Render():
-    # Options for internal render of blender
-    def __init__(self):
-        self.outputFolder = bpy.path.abspath(RENDER_OUTPUT_DIR)
-        self.scene = bpy.data.scenes['Scene']
+class Depth:
+    @classmethod    
+    def enable(cls):
+        cls.setup()
+        cls.tree.links.new(cls.renderLayersNode.outputs[2], cls.normalizeNode.inputs[0])
+        cls.tree.links.new(cls.invertNode.outputs[0], cls.compositeNode.inputs[0])
 
-        # Control render config
-        self.renderLayer = self.scene.render.layers['RenderLayer']
+    @classmethod
+    def disable(cls):
+        cls.setup()
+        cls.tree.links.new(cls.renderLayersNode.outputs[0], cls.compositeNode.inputs[0])
 
-        # Control which layer is visible, TODO: what is the difference?
-        self.sceneLayers = self.scene.layers
-        self.renderLayers = self.scene.render.layers['RenderLayer'].layers
-        self.version = 'v3'
-
-    def setOutputFolder(self, outputFolder):
-        ''' Set the output folder of render '''
-        self.outputFolder = bpy.path.abspath(outputFolder)
-
-    def _switchFreestyle(self, switch):
-        self.scene.render.use_freestyle = switch
-        self._offAllOption()
-        self.renderLayer.use_freestyle = switch
-
-
-    def _enableDepth(self):
-        # TODO: right now this use a normalize node, so the depth will not be consistent across frames
-        # Need to setup the scene following this tutorial
-        # bpy.context.scene.use_nodes = True
+    @classmethod
+    def setup(cls):
         tree = bpy.context.scene.node_tree
         if not tree:
-            print('Error: this scene does not support depth mode.')
+            bpy.context.scene.use_nodes = True
+            tree = bpy.context.scene.node_tree
 
-        if tree:
-            depthNode = tree.nodes.get('Invert')
-            compositeNode = tree.nodes.get('Composite')
+        renderLayersNode = tree.nodes.get('Render Layers')
+        compositeNode = tree.nodes.get('Composite')
+        
+        if not renderLayersNode or not compositeNode:
+            logging.error('Error in setuping up depth mode, renderLayersNode and compositeNode are missing')
 
-            links = tree.links
-            links.new(depthNode.outputs[0], compositeNode.inputs[0])
+        invertNode = tree.nodes.get('Invert')
+        if not invertNode:
+            invertNode = tree.nodes.new('CompositorNodeInvert')  # The type name is changed and undocumented
+            # Check this url https://developer.blender.org/T35336
 
-    def _disableDepth(self):
-        # bpy.context.scene.use_nodes = True
-        tree = bpy.context.scene.node_tree
-        if tree:
-            renderLayersNode = tree.nodes.get('Render Layers')
-            compositeNode = tree.nodes.get('Composite')
+        normalizeNode = tree.nodes.get('Normalize')
+        if not normalizeNode:
+            normalizeNode = tree.nodes.new('CompositorNodeNormalize')
 
-            links = tree.links
-            links.new(renderLayersNode.outputs[0], compositeNode.inputs[0])
+        tree.links.new(normalizeNode.outputs[0], invertNode.inputs[0])
+        cls.tree = tree
+        cls.renderLayersNode = renderLayersNode
+        cls.compositeNode = compositeNode
+        cls.invertNode = invertNode
+        cls.normalizeNode = normalizeNode
 
-    def depthModeOn(self):
+
+class Render:
+    # Options for internal render of blender
+    outputFolder = bpy.path.abspath(RENDER_OUTPUT_DIR)
+    scene = bpy.data.scenes['Scene']
+
+    # Control render config
+    renderLayer = scene.render.layers['RenderLayer']
+
+    # Control which layer is visible, TODO: what is the difference?
+    sceneLayers = scene.layers
+    renderLayers = scene.render.layers['RenderLayer'].layers
+    use_sky = True
+
+    @classmethod
+    def skyOff(cls):
+        cls.use_sky = False
+
+    @classmethod
+    def setOutputFolder(cls, outputFolder):
+        ''' Set the output folder of render '''
+        cls.outputFolder = bpy.path.abspath(outputFolder)
+
+    @classmethod
+    def _switchFreestyle(cls, switch):
+        cls.scene.render.use_freestyle = switch
+        cls._offAllOption()
+        cls.renderLayer.use_freestyle = switch
+
+    @classmethod
+    def depthModeOn(cls):
         ''' Render depth of the scene. To use this function, the scene needs to be pre-configured. '''
-        self._enableDepth()
+        Depth.enable()
 
-    def depthModeOff(self):
-        self._disableDepth()
+    @classmethod
+    def depthModeOff(cls):
+        Depth.disable()
 
-    def boundaryMode(self):
+    @classmethod
+    def boundaryMode(cls):
         ''' Only display boundary of the object '''
-        self._disableDepth()
-        self._switchFreestyle(True)
+        Depth.disable()
+        cls._switchFreestyle(True)
 
-        self._layersOff()
+        cls._layersOff()
         for i in range(3):
-            self.sceneLayers[i] = True
-            self.renderLayers[i] = True
+            cls.sceneLayers[i] = True
+            cls.renderLayers[i] = True
 
-    def realisticMode(self):
+    @classmethod
+    def realisticMode(cls):
         ''' Display the realistic rendering '''
-        self._disableDepth()
-        self._switchFreestyle(False)
+        Depth.disable()
+        cls._switchFreestyle(False)
 
-        # self._offAllOption()
-        self.renderLayer.use_ztransp = True
-        self.renderLayer.use_sky = True
-        self.renderLayer.use_solid = True
+        # cls._offAllOption()
+        cls.renderLayer.use_ztransp = True
+        cls.renderLayer.use_sky = cls.use_sky
+        cls.renderLayer.use_solid = True
 
-        self._layersOff()
+        cls._layersOff()
         for i in range(3):
-            self.sceneLayers[i] = True
-            self.renderLayers[i] = True
+            cls.sceneLayers[i] = True
+            cls.renderLayers[i] = True
 
-    def jointsMode(self):
+    @classmethod
+    def jointsMode(cls):
         ''' Only display the joint locations '''
-        self._disableDepth()
-        self._switchFreestyle(False)
+        Depth.disable()
+        cls._switchFreestyle(False)
 
-        # self._offAllOption()
-        self.renderLayer.use_solid = True
+        # cls._offAllOption()
+        cls.renderLayer.use_solid = True
 
-        self._layersOff()
-        self.sceneLayers[3] = True
-        self.renderLayers[3] = True
+        cls._layersOff()
+        cls.sceneLayers[3] = True
+        cls.renderLayers[3] = True
 
-    def paintModeOn(self):
-        self.renderLayer.use_sky = False
+    @classmethod
+    def paintModeOn(cls):
+        cls.renderLayer.use_sky = False
         tenon.paint.humanPaintOn()
 
-
-    def paintModeOff(self):
-        self.renderLayer.use_sky = True
+    @classmethod
+    def paintModeOff(cls):
+        cls.renderLayer.use_sky = cls.use_sky
         tenon.paint.humanPaintOff()
 
-    def write(self, filename):
+    @classmethod
+    def write(cls, filename):
         ''' Write current scene to the filename '''
         # TODO: check whether this location writable
-        # if not os.path.exists(self.outputFolder):
-        #   os.mkdir(self.outputFolder)
+        # if not os.path.exists(cls.outputFolder):
+        #   os.mkdir(cls.outputFolder)
 
-        # self.scene.render.filepath = self.outputFolder + filename
-        self.scene.render.filepath = filename
-        self.scene.update()
+        # cls.scene.render.filepath = cls.outputFolder + filename
+        cls.scene.render.filepath = filename
+        cls.scene.update()
 
-        # TODO: improve the logging system
-        print('Render to file %s' % self.scene.render.filepath)
+        logging.info('Render to file %s' % cls.scene.render.filepath)
         bpy.ops.render.render(write_still=True)
 
-    def exportJoint(self):
+    @classmethod
+    def exportJoint(cls):
         from tenon.skeleton import world2camera
 
         selectedBones = [
@@ -158,21 +187,20 @@ class Render():
             joints.append((boneId, world2camera(jointLocation)))
         return joints       
 
+    @classmethod
+    def _offAllOption(cls):
+        cls.renderLayer.use_zmask = False
+        cls.renderLayer.use_all_z = False
+        cls.renderLayer.use_solid = False
+        cls.renderLayer.use_halo = False
+        cls.renderLayer.use_ztransp = False
+        cls.renderLayer.use_sky = False
+        cls.renderLayer.use_edge_enhance = False
+        cls.renderLayer.use_strand = False
+        cls.renderLayer.use_freestyle = False
 
-    def _offAllOption(self):
-        self.renderLayer.use_zmask = False
-        self.renderLayer.use_all_z = False
-        self.renderLayer.use_solid = False
-        self.renderLayer.use_halo = False
-        self.renderLayer.use_ztransp = False
-        self.renderLayer.use_sky = False
-        self.renderLayer.use_edge_enhance = False
-        self.renderLayer.use_strand = False
-        self.renderLayer.use_freestyle = False
-
-    def _layersOff(self):
+    @classmethod
+    def _layersOff(cls):
         for i in range(20):
-            self.sceneLayers[i] = False
-
-render = Render()
+            cls.sceneLayers[i] = False
 
