@@ -4,32 +4,50 @@ from tenon.render import Render
 
 class L23Job(Job):
     def config(s):
-        s.clothOptions = ['Texture', 'Color'] # Enum type
-        s.lightOptions = ['Environment', 'Random']
-
+        s.clothOptions = ['texture', 'color'] # Enum type
+        s.lightOptions = ['environment', 'random']
+        s.bgOptions = ['on', 'off']
+        
+        # This is default option
         # Best option is Texture cloth + Random lighting + Random BG?
-        s.clothTexture = 'Texture'
-        s.clothTexture = 'Color'
-        s.randomBG = True
-
-
+        s.cloth = 'color'
+        s.bg = 'on'
+        s.light = 'random'
 
     def __init__(self):
+        Job.__init__(self)
+
         self.config()
         self.outputFolder = '/q/cache/lsp_2d_3d/render_output/'
         for i in range(1, 2001):
             t = L23Task()
             t.LSPPoseId = i
-            tasks.append(t)
+            self.tasks.append(t)
 
     def setupScene(self): # This will be executed before the job is run
-        Shirt.setFolder('//textures/shirt')
+        # Setup cloth
+        if self.cloth not in self.clothOptions:
+            logging.error('Cloth option %s is invalid' % self.cloth)
+        else:
+            clothFolder = {
+                'color': '//textures/shirt'
+            }
+            Shirt.setFolder(clothFolder[self.cloth])
+
+        # Setup background
+        if self.bg not in self.bgOptions:
+            logging.error('Background option %s is invalid' % self.bg)
+        else:
+            if self.bg == 'on':
+                Bg.setFolder('//background/INRIA')
+                Render.skyOn()
+            elif self.bg == 'off':
+                Render.skyOff()
+
+
         Pants.setFolder('//textures/pants')
-        Bg.setFolder('//background/INRIA')
         Hair.setFolder('//textures/hair')
         Skin.setFolder('//textures/skin')
-
-        Render.skyOff() # Disable background
 
         if not '_outputFolder' in dir(self): # This is the configuration defined in file
             self._outputFolder = self.outputFolder
