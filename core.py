@@ -3,11 +3,11 @@ import bpy
 
 
 def getObject(objectName):
-	obj = bpy.data.objects.get(objectName)
-	if not obj:
-		logging.error('Model %s does not exist' % objectName)
+    obj = bpy.data.objects.get(objectName)
+    if not obj:
+        logging.error('Model %s does not exist' % objectName)
 
-	return obj
+    return obj
 
 class Models: # TODO: consider cache for here
     @classmethod
@@ -33,11 +33,11 @@ class Models: # TODO: consider cache for here
 
     @classmethod
     def humanModel(cls):
-    	return getObject(cls.modelName())
+        return getObject(cls.modelName())
 
     @classmethod
     def bodyMesh(cls):
-    	return getObject('%s:Body' % cls.modelName())
+        return getObject('%s:Body' % cls.modelName())
 
     @classmethod
     def upperCloth(cls): # TODO: consider rewrite this, not robust
@@ -45,8 +45,8 @@ class Models: # TODO: consider cache for here
 
     @classmethod
     def lowerCloth(cls):
-    	return getObject('%s:jeans01' % cls.modelName())
+        return getObject('%s:jeans01' % cls.modelName())
 
     @classmethod
     def hair(cls):
-    	return getObject('%s:mhair02' % cls.modelName())
+        return getObject('%s:mhair02' % cls.modelName())
