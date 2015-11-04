@@ -18,8 +18,11 @@ class Job:
         'outputFolder', 
     ]
 
+    def __init__(self):
+        self.tasks = []
+
     def __str__(self):
-        objStr = 'Name:%s, Num:%d\n' % (self.name, len(self.tasks))
+        objStr = '\nName:%s, Num:%d\n' % (self.name, len(self.tasks))
         for p in serializablePropList(self.tasks[0]):
             objStr += '%s:%s\n' % (p, getattr(self.tasks[0], p))
         return objStr
@@ -62,20 +65,39 @@ class Job:
                 line = task.serilizeToLine()
                 f.write(line + '\n')
 
+    def logOn(self):
+        # Set up python logging to direct all logging to the output folder
+        timeStamp = strTimeStamp()
+        logFile = self.outputFolder + timeStamp + 'info.txt'
+        fh = logging.FileHandler(logFile)
+        fh.setLevel(logging.INFO)
+
+        # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # fh.setFormatter(formatter)
+        logging.root.addHandler(fh)
+        self._fh = fh
+
+    def logOff(self):
+        # Disable python logging
+        # Saving log of this job
+        if self._fh and self._fh in logging.root.handlers:
+            logging.root.handlers.removeHandler(self._fh)
+
 
     def run(self, limit=None):
-        self.setupScene()
+        self.setupScene() 
+        # The information of this job can be modified here
+        # Do real job after setupScene()
 
         # Create output folder
         if not os.path.isdir(self.outputFolder):
             os.mkdir(self.outputFolder)
 
-        # Saving log of this job
+        # Enable log and write log file to output folder
+        self.logOn()
         import tenon.info
-        timeStamp = strTimeStamp()
-        logger = tenon.info.Logger(self.outputFolder + timeStamp + 'info.txt')
-        logger.info(tenon.info.cameraInfo())
-        logger.info(tenon.info.blendInfo())
+        logging.info(tenon.info.cameraInfo())
+        logging.info(tenon.info.blendInfo())
 
         count = 0 # Number of generated images
         # Execute task
@@ -86,6 +108,8 @@ class Job:
             count += 1
             if limit and count >= limit:  # Limit the number of generation, handy for debug
                 break
+
+        self.logOff()
 
 class Task:
     requiredProps = [
