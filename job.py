@@ -30,7 +30,6 @@ def parseFromFile(filename):
         assert(j.tasktype != None and j.tasktype != "")
         taskClass = eval(j.tasktype)
 
-        j.outputFolder += '/%s/' % strTimeStamp() # Put into a subfolder with timestamp
         while line.strip() == '':
             line = f.readline() # Skip empty line
 
@@ -42,7 +41,6 @@ def parseFromFile(filename):
         while line:
             t = taskClass()
             t.parseFromLine(line, header)
-            t.outputFolder = j.outputFolder
             tasks.append(t)
             line = f.readline()
 
