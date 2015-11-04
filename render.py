@@ -65,6 +65,10 @@ class Render:
         cls.use_sky = False
 
     @classmethod
+    def skyOn(cls):
+        cls.use_sky = True
+
+    @classmethod
     def setOutputFolder(cls, outputFolder):
         ''' Set the output folder of render '''
         cls.outputFolder = bpy.path.abspath(outputFolder)
