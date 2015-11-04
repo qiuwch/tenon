@@ -47,7 +47,7 @@ class LightSource:
 
 class Lighting:
 	@classmethod
-	def randomCircleConfig(cls, z=0):
+	def randomCircleConfig(cls, radius=12, nLight=16, z=0):
 		import random
 
 		# Set up the light configuration
@@ -60,7 +60,7 @@ class Lighting:
 			# Compute the location of light source, put the light evenly
 			light.location = cls.sphereLocation(radius, 360 / nLight * i, 0)
 			light.location[2] += z  # Set the z of the light source
-			light.energy = random.gauss(1, 2)
+			light.energy = random.gauss(1, 1.5)
 			light.name = 'PointLight%d' % i
 			lightConfig.append(light)
 
@@ -89,7 +89,7 @@ class Lighting:
 	def setup(cls, lightConfig=None):
 		if not lightConfig:
 			logging.info('Create circle lighting environment')
-			lightConfig = cls.randomCircleConfig(z = 0)
+			lightConfig = cls.randomCircleConfig(z = 1, radius = 5)
 
 		logging.info('Create blender lights')
 		for light in lightConfig:
