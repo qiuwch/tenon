@@ -30,5 +30,5 @@ logging.info('Test message.')
 
 import tenon.puppet as pp
 import tenon.scene as sc
-import tenon.misc as M
+import tenon.run as R
 from tenon.core import Models

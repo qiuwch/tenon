@@ -2,9 +2,15 @@ from tenon.tasks.basic import *
 from tenon.scene import Shirt, Pants, Bg, Lighting, Hair, Skin
 from tenon.render import Render
 
+def timeStamp():
+    import time
+    timeStamp = time.strftime('%m%d%H%M', time.localtime())
+    return timeStamp
+
+
 class L23Job(Job):
     def config(s):
-        s.clothOptions = ['texture', 'color'] # Enum type
+        s.clothOptions = ['textureBrodatz', 'color'] # Enum type
         s.lightOptions = ['environment', 'random']
         s.bgOptions = ['on', 'off']
         
@@ -14,25 +20,33 @@ class L23Job(Job):
         s.bg = 'on'
         s.light = 'random'
 
-    def __init__(self):
-        Job.__init__(self)
+        # base folder, the real output is suffixed with timestamp
+        s.baseFolder = '/q/cache/lsp_2d_3d/render_output/' 
 
-        self.config()
-        self.outputFolder = '/q/cache/lsp_2d_3d/render_output/'
         for i in range(1, 2001):
             t = L23Task()
             t.LSPPoseId = i
-            self.tasks.append(t)
+            s.tasks.append(t)
+
+    def finish(self):
+        # Write post-processing script to this folder, this is a very hacky way
+        cropCmd = '''\
+#!env sh
+matlab -nosplash -nodesktop –nojvm –noFigureWindows -r "addpath('/q/run/tenon/util/lsp'); lsp_convert_format('.');"\
+'''
+        with open(self.outputFolder + '/crop.sh', 'w') as f:
+            f.write(cropCmd)
 
     def setupScene(self): # This will be executed before the job is run
         # Setup cloth
         if self.cloth not in self.clothOptions:
             logging.error('Cloth option %s is invalid' % self.cloth)
-        else:
-            clothFolder = {
-                'color': '//textures/shirt'
-            }
-            Shirt.setFolder(clothFolder[self.cloth])
+        elif self.cloth == 'color':
+            Shirt.setFolder('//textures/shirt')
+            Pants.setFolder('//textures/pants')
+        elif self.cloth == 'textureBrodatz':
+            Shirt.setFolder('//textures/ColorBrodatzPng')
+            Pants.setFolder('//textures/ColorBrodatzPng')            
 
         # Setup background
         if self.bg not in self.bgOptions:
@@ -44,17 +58,12 @@ class L23Job(Job):
             elif self.bg == 'off':
                 Render.skyOff()
 
-
-        Pants.setFolder('//textures/pants')
         Hair.setFolder('//textures/hair')
         Skin.setFolder('//textures/skin')
 
-        if not '_outputFolder' in dir(self): # This is the configuration defined in file
-            self._outputFolder = self.outputFolder
-        
-        import bpy, os
-        sceneId = os.path.basename(bpy.data.filepath).split('.')[0]
-        self.outputFolder = self._outputFolder + '/%s_%s/' % (sceneId, strTimeStamp()) # Put into a subfolder with timestamp
+        self.outputFolder = self.baseFolder + '/%s_%s/' % (self.name, timeStamp()) # Put into a subfolder with timestamp
+
+
 
 
 class L23Task(Task):
@@ -62,6 +71,7 @@ class L23Task(Task):
 
     def __init__(self):
         Task.__init__(self)
+        self.mode = 'ijd'
         # Define the property list for this task
 
 

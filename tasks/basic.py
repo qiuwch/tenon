@@ -18,11 +18,18 @@ class Job:
         'outputFolder', 
     ]
 
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         self.tasks = []
+        self.config() # This is overwritten by subclass
 
     def __str__(self):
-        objStr = '\nName:%s, Num:%d\n' % (self.name, len(self.tasks))
+        objStr = \
+        '''Name:%s, Num:%d
+        %s
+        ''' \
+         % (self.name, len(self.tasks), self.comment)
+
         for p in serializablePropList(self.tasks[0]):
             objStr += '%s:%s\n' % (p, getattr(self.tasks[0], p))
         return objStr
@@ -67,13 +74,12 @@ class Job:
 
     def logOn(self):
         # Set up python logging to direct all logging to the output folder
-        timeStamp = strTimeStamp()
-        logFile = self.outputFolder + timeStamp + 'info.txt'
+        logFile = self.outputFolder + '%s.log' % strTimeStamp()
         fh = logging.FileHandler(logFile)
         fh.setLevel(logging.INFO)
 
-        # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        # fh.setFormatter(formatter)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
         logging.root.addHandler(fh)
         self._fh = fh
 
@@ -81,13 +87,15 @@ class Job:
         # Disable python logging
         # Saving log of this job
         if self._fh and self._fh in logging.root.handlers:
-            logging.root.handlers.removeHandler(self._fh)
+            logging.root.removeHandler(self._fh)
 
 
     def run(self, limit=None):
         self.setupScene() 
         # The information of this job can be modified here
         # Do real job after setupScene()
+
+        self.validate() # Check potential error before running this job
 
         # Create output folder
         if not os.path.isdir(self.outputFolder):
@@ -109,7 +117,9 @@ class Job:
             if limit and count >= limit:  # Limit the number of generation, handy for debug
                 break
 
+        self.finish()
         self.logOff()
+
 
 class Task:
     requiredProps = [
