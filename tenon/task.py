@@ -13,99 +13,98 @@ def serializablePropList(obj):
 
 
 class Job:
-    requiredProps = [ # Required properties
-        'name',
-        'outputFolder', 
-    ]
+    # requiredProps = [ # Required properties
+    #     'name',
+    #     'outputFolder', 
+    # ]
 
-    def __init__(self, name):
-        self.name = name
-        self.tasks = []
-        self.config() # This is overwritten by subclass
+    # def __init__(self, name):
+    #     self.name = name
+    #     self.tasks = []
+    #     self.config() # This is overwritten by subclass
 
-    def __str__(self):
-        objStr = \
-        '''Name:%s, Num:%d
-        %s
-        ''' \
-         % (self.name, len(self.tasks), self.comment)
+    # def __str__(self):
+    #     objStr = \
+    #     '''Name:%s, Num:%d
+    #     %s
+    #     ''' \
+    #      % (self.name, len(self.tasks), self.comment)
 
-        for p in serializablePropList(self.tasks[0]):
-            objStr += '%s:%s\n' % (p, getattr(self.tasks[0], p))
-        return objStr
+    #     for p in serializablePropList(self.tasks[0]):
+    #         objStr += '%s:%s\n' % (p, getattr(self.tasks[0], p))
+    #     return objStr
 
-    def __repr__(self):
-        return self.__str__()
+    # def __repr__(self):
+    #     return self.__str__()
 
-    def validate(self):
-        # Check whether this is a valid job
-        for prop in self.requiredProps: # Make sure this file is valid
-            if not prop in dir(self):
-                logging.error('Job: property %s is required but missing.' % prop)
+    # def validate(self):
+    #     # Check whether this is a valid job
+    #     for prop in self.requiredProps: # Make sure this file is valid
+    #         if not prop in dir(self):
+    #             logging.error('Job: property %s is required but missing.' % prop)
 
-        for t in self.tasks:
-            t.validate()
+    #     for t in self.tasks:
+    #         t.validate()
 
-        assert(len(self.tasks) != 0)
+    #     assert(len(self.tasks) != 0)
 
-    def save(self, filename):
-        self.validate()
+    # def save(self, filename):
+    #     self.validate()
 
-        with open(filename, 'w') as f:
-            taskInstance = self.tasks[0]
-            self.tasktype = taskInstance.__class__.__name__
-            # Be aware: this is black tech of python, cautious of malware input
-            # for prop in dir(self):
-            for prop in serializablePropList(self):
-                # if not prop[0].startswith('__') and type(getattr(self, prop)) == str:
-                line = '%s : %s' % (prop, getattr(self, prop))
-                f.write(line + '\n')
+    #     with open(filename, 'w') as f:
+    #         taskInstance = self.tasks[0]
+    #         self.tasktype = taskInstance.__class__.__name__
+    #         # Be aware: this is black tech of python, cautious of malware input
+    #         # for prop in dir(self):
+    #         for prop in serializablePropList(self):
+    #             # if not prop[0].startswith('__') and type(getattr(self, prop)) == str:
+    #             line = '%s : %s' % (prop, getattr(self, prop))
+    #             f.write(line + '\n')
 
-            count = 0
-            for task in self.tasks:
-                task.rowId = count
-                count += 1
+    #         count = 0
+    #         for task in self.tasks:
+    #             task.rowId = count
+    #             count += 1
 
 
-            f.write(taskInstance.header() + '\n')
-            for task in self.tasks:
-                line = task.serilizeToLine()
-                f.write(line + '\n')
+    #         f.write(taskInstance.header() + '\n')
+    #         for task in self.tasks:
+    #             line = task.serilizeToLine()
+    #             f.write(line + '\n')
 
-    def logOn(self):
-        # Set up python logging to direct all logging to the output folder
-        logFile = self.outputFolder + '%s.log' % strTimeStamp()
-        fh = logging.FileHandler(logFile)
-        fh.setLevel(logging.INFO)
+    # def logOn(self):
+    #     # Set up python logging to direct all logging to the output folder
+    #     logFile = self.outputFolder + '%s.log' % strTimeStamp()
+    #     fh = logging.FileHandler(logFile)
+    #     fh.setLevel(logging.INFO)
 
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        fh.setFormatter(formatter)
-        logging.root.addHandler(fh)
-        self._fh = fh
+    #     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    #     fh.setFormatter(formatter)
+    #     logging.root.addHandler(fh)
+    #     self._fh = fh
 
-    def logOff(self):
-        # Disable python logging
-        # Saving log of this job
-        if self._fh and self._fh in logging.root.handlers:
-            logging.root.removeHandler(self._fh)
-
+    # def logOff(self):
+    #     # Disable python logging
+    #     # Saving log of this job
+    #     if self._fh and self._fh in logging.root.handlers:
+    #         logging.root.removeHandler(self._fh)
 
     def run(self, limit=None):
         self.setupScene() 
         # The information of this job can be modified here
         # Do real job after setupScene()
 
-        self.validate() # Check potential error before running this job
+        # self.validate() # Check potential error before running this job
 
         # Create output folder
         if not os.path.isdir(self.outputFolder):
             os.mkdir(self.outputFolder)
 
         # Enable log and write log file to output folder
-        self.logOn()
-        import tenon.info
-        logging.info(tenon.info.cameraInfo())
-        logging.info(tenon.info.blendInfo())
+        # self.logOn()
+        # import tenon.info
+        # logging.info(tenon.info.cameraInfo())
+        # logging.info(tenon.info.blendInfo())
 
         count = 0 # Number of generated images
         # Execute task
@@ -118,7 +117,7 @@ class Job:
                 break
 
         self.finish()
-        self.logOff()
+        # self.logOff()
 
 
 class Task:

@@ -1,32 +1,24 @@
-from tenon.tasks.basic import *
+from tenon.task import *
 from tenon.scene import Shirt, Pants, Bg, Lighting, Hair, Skin
 from tenon.render import Render
 
-def timeStamp():
-    import time
-    timeStamp = time.strftime('%m%d%H%M', time.localtime())
-    return timeStamp
-
-
 class L23Job(Job):
-    def config(s):
-        s.clothOptions = ['textureBrodatz', 'color'] # Enum type
-        s.lightOptions = ['environment', 'random']
-        s.bgOptions = ['on', 'off']
+    def __init__(self):
+        self.clothOptions = ['textureBrodatz', 'color'] # Enum type
+        self.lightOptions = ['environment', 'random']
+        self.bgOptions = ['on', 'off']
         
         # This is default option
         # Best option is Texture cloth + Random lighting + Random BG?
-        s.cloth = 'color'
-        s.bg = 'on'
-        s.light = 'random'
+        self.cloth = 'color'
+        self.bg = 'on'
+        self.light = 'random'
 
-        # base folder, the real output is suffixed with timestamp
-        s.baseFolder = '/q/cache/lsp_2d_3d/render_output/' 
-
+        self.tasks = []
         for i in range(1, 2001):
             t = L23Task()
             t.LSPPoseId = i
-            s.tasks.append(t)
+            self.tasks.append(t)
 
     def finish(self):
         # Write post-processing script to this folder, this is a very hacky way
@@ -61,7 +53,7 @@ matlab -nosplash -nodesktop –nojvm –noFigureWindows -r "addpath('/q/run/teno
         Hair.setFolder('//textures/hair')
         Skin.setFolder('//textures/skin')
 
-        self.outputFolder = self.baseFolder + '/%s_%s/' % (self.name, timeStamp()) # Put into a subfolder with timestamp
+        # self.outputFolder = self.baseFolder + '/%s_%s/' % (self.name, tenon.util.shorttimestamp()) # Put into a subfolder with timestamp
 
 
 
