@@ -9,7 +9,7 @@ from l23 import L23Job
 
 def main():
     timestamp = tenon.util.shorttimestamp()
-    logfile = '%s/render_no_bg_%s.log' % (os.getcwd(), timestamp)
+    logfile = '%s/render_color_%s.log' % (os.getcwd(), timestamp)
     tenon.util.startlogging(logfile)
 
     # l23_color_cloth = L23Job('l23color')
