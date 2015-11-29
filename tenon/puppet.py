@@ -5,19 +5,19 @@ import mathutils
 import logging
 from tenon.core import Models
 
-lspJointFile = [
-    '/q/cache/lsp_2d_3d/joint_3d/2015101415_v2/%04d.csv', # This is unnormalized version, version 2 of poseprior code
-    '/q/cache/lsp_2d_3d/joint_3d/2015101618_v3/%04d.csv' # version 2 of poseprior code, better weight
-]
+# lspJointFile = [
+#     '/q/cache/lsp_2d_3d/joint_3d/2015101415_v2/%04d.csv', # This is unnormalized version, version 2 of poseprior code
+#     '/q/cache/lsp_2d_3d/joint_3d/2015101618_v3/%04d.csv' # version 2 of poseprior code, better weight
+# ]
 # TODO: try version 3 which is of a different weight
 
-def animateEditBone(id, normalize=True, version=0):
+def animateEditBone(csvfile, normalize=True, version=0):
     # The mapping from csv to empty
     # Use this function with armature_visualize.blend
     if normalize:
-        loc = Retarget.readJointLocCSV(lspJointFile[version] % id)
+        loc = Retarget.readJointLocCSV(csvfile)
     else:
-        loc = Retarget.readJointLocCSV(lspJointFile[version] % id, retarget=False)
+        loc = Retarget.readJointLocCSV(csvfile, retarget=False)
 
     if not loc:
         return
@@ -36,10 +36,10 @@ def animateEditBone(id, normalize=True, version=0):
         editBone.tail = loc[tailJointName]
 
 
-def animateCP(id, version=0):
+def animateCP(csvfile, version=0):
     # Make the retarget code here.
     # Load data from exported csv file
-    loc = Retarget.readJointLocCSV(lspJointFile[version] % id)
+    loc = Retarget.readJointLocCSV(csvfile)
     if not loc:
         return
 
