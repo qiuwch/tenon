@@ -39,17 +39,17 @@ function lsp_convert_format(origDir)
                 continue; 
             end
             
-            im = imread(imfname);
+            [im, ~, alpha] = imread(imfname);
             im = im2double(im);
-            
-            [crop, U, V] = crop_img(im, fgMask, X, Y);
+            alpha = im2double(alpha);
+            [crop, U, V, cropAlpha] = crop_img(im, fgMask, X, Y, alpha);
             % debug
             % imshow(im); hold on; plot(X, Y, '*'); pause;
             % imshow(crop); hold on; plot(U, V, '*'); pause;
             
             % Save cropped image
             crop_imfname = sprintf([cropDir '/' type '/im%04d.png'], fileid);
-            imwrite(crop, crop_imfname);
+            imwrite(crop, crop_imfname, 'Alpha', cropAlpha);
 
             % Save annotation
             joints(1, :, fileid) = U; % Fix a critical BUG of file index !!

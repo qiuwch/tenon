@@ -1,7 +1,8 @@
-function [crop, U, V] = crop_img(im, fgMask, X, Y)
+function [crop, U, V, cropAlpha] = crop_img(im, fgMask, X, Y, alpha)
 	% crop : cropped image
 	% U : mapped X coordinate
 	% V : mapped Y coordinate
+    % cropAlpha: cropped alpha mask
 
 	% compute the bounding box of fg
 	imSize = size(fgMask);
@@ -29,6 +30,7 @@ function [crop, U, V] = crop_img(im, fgMask, X, Y)
 	T = maketform('affine', A);
 	XData = [1, cw]; YData = [1, ch];
 	crop = imtransform(im, T, 'XData', XData, 'YData', YData);
+    cropAlpha = imtransform(alpha, T, 'XData', XData, 'YData', YData);
 
 	% Mapping of landmark locations
 	[U, V] = tformfwd(T, X, Y);
