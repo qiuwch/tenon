@@ -6,13 +6,25 @@ class L23Job(Job):
     def __init__(self):
         jointinfo = '/q/cache/tenon/lsp_3d_joint/2015101415_v2/%04d.csv'
 
-        self.clothOptions = ['textureBrodatz', 'color'] # Enum type
         self.lightOptions = ['environment', 'random']
         self.bgOptions = ['on', 'off']
+
+        # Pure color
+        # self.shirtFolder = '//textures/shirt'
+        # self.pantsFolder = '//textures/pants'
+
+        # Texture Brodatz
+        # self.shirtFolder = '//textures/ColorBrodatzPng'
+        # self.pantsFolder = '//textures/ColorBrodatzPng'
+
+        # A lot of random color
+        # self.shirtFolder = '//textures/randomColor'
+        # self.pantsFolder = '//textures/randomColor'
+
+        # Skin color from makehuman repo
+        # self.skinFolder = '//textures/skin'
+        # self.skinFolder = '//textures/randSkinColor'
         
-        # This is default option
-        # Best option is Texture cloth + Random lighting + Random BG?
-        self.cloth = 'color'
         self.bg = 'on'
         self.light = 'random'
 
@@ -34,14 +46,8 @@ matlab -nosplash -nodesktop –nojvm –noFigureWindows -r "addpath('/q/run/teno
 
     def setupScene(self): # This will be executed before the job is run
         # Setup cloth
-        if self.cloth not in self.clothOptions:
-            logging.error('Cloth option %s is invalid' % self.cloth)
-        elif self.cloth == 'color':
-            Shirt.setFolder('//textures/shirt')
-            Pants.setFolder('//textures/pants')
-        elif self.cloth == 'textureBrodatz':
-            Shirt.setFolder('//textures/ColorBrodatzPng')
-            Pants.setFolder('//textures/ColorBrodatzPng')            
+        Shirt.setFolder(self.shirtFolder)
+        Pants.setFolder(self.pantsFolder)
 
         # Setup background
         if self.bg not in self.bgOptions:
@@ -54,7 +60,7 @@ matlab -nosplash -nodesktop –nojvm –noFigureWindows -r "addpath('/q/run/teno
                 Render.skyOff()
 
         Hair.setFolder('//textures/hair')
-        Skin.setFolder('//textures/skin')
+        Skin.setFolder(self.skinFolder)
 
         # self.outputFolder = self.baseFolder + '/%s_%s/' % (self.name, tenon.util.shorttimestamp()) # Put into a subfolder with timestamp
 
