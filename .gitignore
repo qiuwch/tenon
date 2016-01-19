@@ -1,4 +1,8 @@
 refactor/
+
+# Ignore related data
+data/
+
 *~
 .DS_Store
 *.pyc
