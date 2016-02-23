@@ -13,8 +13,3 @@ __pycache__/
 # Backup file of blender scene
 *.blend1
 
-# Ignore large chunk of data files
-scenes/motions/
-scenes/textures/
-scenes/background/
-
