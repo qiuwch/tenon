@@ -8,25 +8,60 @@ import lsppose
 import tenon
 
 if tenon.inblender():
-    import bpy, mathutils, os, logging
+    import bpy, mathutils, os
+    import tenon.logging as L
 
-    if os.getcwd() == '/':
-        logfile = '/Users/qiuwch/Downloads/lsppose.log'
-    else:
-        logfile = './lsppose.log'
+    class Models:
+        def __init__(self):
+            '''
+            Find human model in the scene
+            '''
+            keys = bpy.data.armatures.keys()
+            L.debug('Get %d armatures %s' % (len(keys), keys))
 
-    print(logfile)
-    logger = logging.getLogger('lsppose')
-    fh = logging.FileHandler(logfile, mode = 'w')
-    formatter = logging.Formatter(fmt = '%(asctime)s - %(filename)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
+            modelNames = []
+            for k in keys:
+                humanModel = bpy.data.objects.get(k)
+                humanBody = bpy.data.objects.get('%s:Body' % k)
+                if humanModel and humanBody:
+                    L.debug('Model %s exists' % k)
+                    modelNames.append(k)
+                else:
+                    L.debug('Model %s not exist' % k)
+
+            if len(modelNames) != 1:
+                L.error('%d is invalid number of human models' % len(modelNames))
+                return ''
+
+            self.modelName = modelNames[0]
+
+        def humanModel(self):
+            '''
+            Return human model
+            '''
+            return tenon.obj.get(self.modelName)
+
+        def bodyMesh(self):
+            return tenon.obj.get('%s:Body' % self.modelName)
+
+        def upperCloth(self): # TODO: consider rewrite this, not robust
+            return tenon.obj.get('%s:short01' % self.modelName)
+
+        def lowerCloth(self):
+            return tenon.obj.get('%s:jeans01' % self.modelName)
+
+        def hair(self):
+            return tenon.obj.get('%s:mhair02' % self.modelName)
+
+
+    models = Models()
 
     def createConstraint():
         '''
         Create constraints to animate the human model
         '''
         Constraint.setup()
+
 
     def animate(posefile):
         '''
@@ -53,7 +88,7 @@ if tenon.inblender():
                 controlEmpty.name = jointName
 
             pt = loc[jointName]
-            logger.debug('Move %s to %s' % (jointName, str(pt)))
+            L.debug('Move %s to %s' % (jointName, str(pt)))
 
             controlEmpty.location.x = pt.x
             controlEmpty.location.y = pt.y
@@ -61,55 +96,13 @@ if tenon.inblender():
 
         bpy.context.scene.update()  # This is super important
 
-    class Models: # TODO: consider cache for here
-        @classmethod
-        def modelName(cls):
-            keys = bpy.data.armatures.keys()
-            logger.debug('Get %d armatures %s' % (len(keys), keys))
-
-            modelNames = []
-            for k in keys:
-                humanModel = bpy.data.objects.get(k)
-                humanBody = bpy.data.objects.get('%s:Body' % k)
-                if humanModel and humanBody:
-                    logger.debug('Model %s exists' % k)
-                    modelNames.append(k)
-                else:
-                    logger.debug('Model %s not exist' % k)
-
-            if len(modelNames) != 1:
-                logger.error('%d is invalid number of human models' % len(modelNames))
-                return ''
-                
-            return modelNames[0]
-
-        @classmethod
-        def humanModel(cls):
-            return tenon.obj.get(cls.modelName())
-
-        @classmethod
-        def bodyMesh(cls):
-            return tenon.obj.get('%s:Body' % cls.modelName())
-
-        @classmethod
-        def upperCloth(cls): # TODO: consider rewrite this, not robust
-            return tenon.obj.get('%s:short01' % cls.modelName())
-
-        @classmethod
-        def lowerCloth(cls):
-            return tenon.obj.get('%s:jeans01' % cls.modelName())
-
-        @classmethod
-        def hair(cls):
-            return tenon.obj.get('%s:mhair02' % cls.modelName())
-
 
     class Retarget:
         # Generate edit bones to show joint location
         bones = [ # I got these names from the poseprior dataset
-            'back-bone', 'R-shldr', 'R-Uarm', 'R-Larm', 
+            'back-bone', 'R-shldr', 'R-Uarm', 'R-Larm',
             'L-shldr', 'L-Uarm', 'L-Larm', 'head',
-            'R-hip', 'R-Uleg', 'R-Lleg', 'R-feet', 
+            'R-hip', 'R-Uleg', 'R-Lleg', 'R-feet',
             'L-hip', 'L-Uleg', 'L-Lleg', 'L-feet', 'tail'
         ];
 
@@ -155,13 +148,12 @@ if tenon.inblender():
             'tail': ['root.head', 'root.tail'],
         }
 
-
         @classmethod
         def addTail(cls, loc):
             # Use this to add a tail bone to structure
             # Create a tail for rotation control
             # vec1 = loc['shoulder.l'] - loc['shoulder.r']
-            logger.info('Add a tail bone to the armature')
+            L.info('Add the tail position to the armature')
             vec1 = loc['shoulder.r'] - loc['shoulder.l']
             vec2 = loc['neck'] - loc['root']
 
@@ -191,11 +183,12 @@ if tenon.inblender():
             '''
             Return a dictionary containing location for each joint
             '''
+            csvFile = os.path.expanduser(csvFile)
             if not os.path.isfile(csvFile):
-                logger.error('Joint file %s does not exist.' % csvFile)
+                L.error('Joint file %s does not exist.' % csvFile)
                 return None
 
-            logger.info('Read joint information from csv file %s' % csvFile)
+            L.info('Read joint information from csv file %s' % csvFile)
 
             px = []; py = []; pz = []; jointNames = []
             with open(csvFile) as f:
@@ -211,7 +204,7 @@ if tenon.inblender():
                     jointNames.append(name)
                     line = f.readline()
 
-            # Load joint location from csv file.    
+            # Load joint location from csv file.
             loc = {}
             for i in range(len(px)):
                 jointName = jointNames[i]
@@ -224,7 +217,7 @@ if tenon.inblender():
                 loc[jointName] = mathutils.Vector((x, y, z))
 
             # Add tail
-            Retarget.addTail(loc)        
+            Retarget.addTail(loc)
 
             # Move the shoulder down
             # Do this before length normalization, because this operation can affect bone length
@@ -244,7 +237,7 @@ if tenon.inblender():
 
         @classmethod
         def retargetJointLocation(cls, loc):
-            logger.info('Retarget the joint location to fit the human model')
+            L.info('Retarget the joint location to fit the human model')
             newLoc = {}
             newLoc['root'] = loc['root'] # Start from here
             # Do normalization for each bone
@@ -274,7 +267,7 @@ if tenon.inblender():
             # Get the bone length defined by the armature I want to target to
             def getRestJointLoc(boneName, jointType):
                 # Must get the location of edit bone here.
-                obj = Models.humanModel()
+                obj = models.humanModel()
                 editBone = obj.data.edit_bones[boneName]
                 if jointType == 'head':
                     loc = editBone.head
@@ -287,7 +280,7 @@ if tenon.inblender():
             def computeDistance(loc1, loc2):
                 return (loc1 - loc2).length
 
-            def getBoneLength(boneName): 
+            def getBoneLength(boneName):
                 boneHead = Retarget.makehumanJointMapping[boneName][0]
                 boneTail = Retarget.makehumanJointMapping[boneName][1]
 
@@ -301,7 +294,7 @@ if tenon.inblender():
 
                 return length
 
-            bpy.context.scene.objects.active = Models.humanModel()
+            bpy.context.scene.objects.active = models.humanModel()
             bpy.ops.object.mode_set(mode='EDIT')
 
             refArmature = {}
@@ -324,13 +317,16 @@ if tenon.inblender():
             '''
             Create empty object as control points for the human model
             '''
+            # Set the 3D cursor to origin position
+            bpy.context.scene.cursor_location = (0, 0, 0)
+
             bpy.ops.object.mode_set(mode='OBJECT')
             for p in cls.controlPointNames:
                 controlEmpty = bpy.data.objects.get(p)
                 if not controlEmpty:
                     bpy.ops.object.empty_add(radius=0.05)
                     controlEmpty = bpy.context.object
-                    controlEmpty.name = p  
+                    controlEmpty.name = p
 
         def __init__(self):
             self.boneName = ''
@@ -343,28 +339,28 @@ if tenon.inblender():
             Apply constraint to connect bone and empty control objects
             '''
             self.constraintName = '%s_%s' % (self.type, self.target)
-            model = Models.humanModel()
-            logger.info('Setting up constraint %s, %s' % (self.boneName, self.target))
+            model = models.humanModel()
+            L.info('Setting up constraint %s, %s' % (self.boneName, self.target))
 
             bone = model.pose.bones.get(self.boneName)
             if not bone:
-                logger.error('The bone %s can not be found' % self.boneName)
+                L.error('The bone %s can not be found' % self.boneName)
 
             c = bone.constraints.get(self.constraintName)
             if c:
-                logger.info('Constraint already exist')
+                L.info('Constraint already exist')
             else:
                 c = bone.constraints.new(self.type)
 
             targetObject = bpy.data.objects.get(self.target)
             if not targetObject:
-                logger.error('The target object %s can not be found' % self.target)
+                L.error('The target object %s can not be found' % self.target)
             c.target = targetObject
 
             for k in self.parameters:
-                logger.debug('Setup parameter %s:%s' % (k, self.parameters[k]))
+                L.debug('Setup parameter %s:%s' % (k, self.parameters[k]))
                 if k not in dir(c):
-                    logger.error('Parameter %s is not valid' % k)
+                    L.error('Parameter %s is not valid' % k)
                 else:
                     setattr(c, k, self.parameters[k])
 
@@ -399,3 +395,77 @@ if tenon.inblender():
                 if len(v) == 4: # parameters is optional
                     c.parameters = v[3]
                 c.apply()
+
+    class JointInfo:
+        @staticmethod
+        def export():
+            '''
+            Export the joint location as 2d coordinates
+            '''
+            selectedBones = [
+                # 1. name of the bone
+                # 2. use tail or head location of the bone
+                ('thigh.fk.L', 'tail'), # ('shin.fk.L', 'head'),
+                ('thigh.fk.R', 'tail'), # easier for rotation
+                ('thigh.fk.L', 'head'),
+                ('thigh.fk.R', 'head'),
+                ('head', 'tail'),
+                ('shin.fk.L', 'tail'), # ('foot.fk.L', 'head'),
+                ('shin.fk.R', 'tail'), # ('foot.fk.R', 'head'),
+                ('forearm.fk.L', 'tail'), #('hand.fk.L', 'head'),
+                ('forearm.fk.R', 'tail'), # ('hand.fk.R', 'head'),
+                ('upper_arm.fk.L', 'tail'), # ('forearm.fk.R', 'head'),
+                ('upper_arm.fk.R', 'tail'), # ('forearm.fk.L', 'head'),
+                ('upper_arm.fk.L', 'head'),
+                ('upper_arm.fk.R', 'head'),
+                ('neck', 'head')
+            ]
+
+            # obj = tenon.obj.get('m_c_1')
+            obj = models.humanModel()
+
+            joints = [] # Return joint position of this frame
+            for boneInfo in selectedBones:
+                boneName = boneInfo[0]
+                tailOrHead = boneInfo[1]
+                poseBone = obj.pose.bones[boneName]
+
+                if tailOrHead == 'head':
+                    jointLocation = poseBone.head
+                elif tailOrHead == 'tail':
+                    jointLocation = poseBone.tail
+
+                boneId = '%s.%s' % (boneName, tailOrHead)
+                joints.append((boneId, JointInfo.world2camera(jointLocation)))
+            return joints
+
+        @staticmethod
+        def serializeJointInfo(filename, joints):
+            '''
+            Save joint data to file
+            '''
+            filename = bpy.path.abspath(filename)
+            with open(filename, 'w') as f:
+                for j in joints:
+                    f.write('%s,%s\n' % (j[0], ','.join([str(v) for v in j[1]])))
+
+        @staticmethod
+        def world2camera(location):
+            '''
+            Map the 3d coordinate to camera coordinate
+            This is an excellent reference: http://blender.stackexchange.com/questions/882/how-to-find-image-coordinates-of-the-rendered-vertex
+            '''
+            import bpy, bpy_extras
+
+            scene = bpy.context.scene
+            cam = bpy.data.objects.get('Camera')
+            co_2d = bpy_extras.object_utils.world_to_camera_view(scene, cam, location)
+            # co_2d is normalized device coordinate (NDC)
+
+            # If you want pixel coords
+            render_scale = scene.render.resolution_percentage / 100
+            render_size = (
+                    int(scene.render.resolution_x * render_scale),
+                    int(scene.render.resolution_y * render_scale),
+                    )
+            return (round(co_2d.x * render_size[0]), round((1-co_2d.y) * render_size[1]))
