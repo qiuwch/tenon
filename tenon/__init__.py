@@ -1,4 +1,4 @@
-import sys, os
+import sys, os, subprocess
 # import tenon # What will happen if I do this loop import?
 import tenon.setting # preload of module
 
@@ -18,8 +18,10 @@ if inblender():
 def run(taskfile, scenefile):
     if not tenon.inblender():
         blender = tenon.setting.blender
-        cmd = '%s %s --background --python %s' % (blender, scenefile, taskfile)
+        # cmd = '%s %s --background --python %s > /dev/null 2>&1' % (blender, scenefile, taskfile)
+        cmd = '%s %s --background --python %s >> blender_stdout.log' % (blender, scenefile, taskfile)
 
         # Redirect the output of blender. The default output is not very useful
         print(cmd)
         os.system(cmd)
+        # subprocess.Popen([blender, scenefile, '--background', '--python', taskfile])
