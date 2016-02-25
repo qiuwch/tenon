@@ -1,11 +1,15 @@
 # Demo script to show how to generate random lighting
 import sys, os
-sys.path.append(os.path.expanduser('~/Dropbox/workspace/tenon/code'))
+# sys.path.append(os.path.expanduser('~/Dropbox/workspace/tenon/code'))
+sys.path.append(os.path.abspath('..'))
 import tenon
 
 rootdir = './../../'
 def main():
     import random
+    import tenon.logging as L
+    # L.fileLevel(L.DEBUG) # default is ERROR
+    cachedir = os.path.abspath(os.path.join(rootdir, 'cache/examples/random_light'))
 
     # Set up the light configuration
     radius = 12
@@ -22,8 +26,8 @@ def main():
             lampObj.location = tenon.util.sphereLocation(radius, 360 / nLight * i, 0)
             lampObj.location[2] += z  # Set the z of the light source
             lamp.energy = random.gauss(1, 1.5)
-        filename = os.path.join(rootdir, 'cache/fig/random_lighting_%d.png' % j)
-        print(filename)
+        filename = os.path.join(cachedir, 'random_lighting_%d.png' % j)
+        L.info('Rendered file: %s', filename)
         tenon.render.write(filename)
 
 if not tenon.inblender():
