@@ -5,34 +5,38 @@ Write logging to files, because the output of blender is too verbose
 If want to change to logfile, must change tenon setting, before using this module
 In this logging system, I want to seperate the message from tenon library and my specific task code.
 '''
-import tenon.setting
-import logging as L
+from __future__ import absolute_import
+import logging # This is the system logging module
 import sys
 
-# format='%(asctime)s %(message)s', datefmt='%Y%m%d-%H%M%S')
+# No dependency on other modules, this is a core module and needs to be very stable
+# from tenon.util import timestamp, dictwrapper
+
+def timestamp():
+    import datetime
+    n = datetime.datetime.now()
+    return n.strftime('%Y%m%d-%H%M%S')
+
+default_log_file = 'tenon-%s.log' % timestamp()
+
 # Learn from logging cookbook
-logger = L.getLogger('tenon')
+logger = logging.getLogger('tenon')
 logger.propagate = False # Do not contaminate the log of invoking program
-# logger.setLevel(L.DEBUG)
-logger.setLevel(L.INFO) # Default level should be INFO
 
-logfilename = tenon.setting.logfile
-error_fh = L.FileHandler(logfilename.error, delay=True, mode='w')
-error_fh.setLevel(L.ERROR) # Can not use setLevel here
-info_fh = L.FileHandler(logfilename.info, delay=True, mode='w')
-info_fh.setLevel(L.INFO)
-warning_fh = L.FileHandler(logfilename.warning, delay=True, mode='w')
-warning_fh.setLevel(L.WARNING)
-debug_fh = L.FileHandler(logfilename.debug, delay=True, mode='w')
-debug_fh.setLevel(L.DEBUG)
+# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO) # Default level should be INFO
 
-sh = L.StreamHandler(sys.stderr)
-sh.setLevel = (L.DEBUG)
+fh = logging.FileHandler(default_log_file, delay = True, mode='w')
+fh.setLevel(logging.ERROR)
 
-formatter = L.Formatter('%(asctime)s - %(filename)s - %(levelname)s - %(message)s')
+sh = logging.StreamHandler(sys.stderr)
+sh.setLevel = (logging.DEBUG)
 
-# for v in [error_fh, info_fh, warning_fh, debug_fh, sh]:
-for v in [debug_fh, sh]:
+# format='%(asctime)s %(message)s', datefmt='%Y%m%d-%H%M%S')
+format = '%(asctime)s - %(filename)s - %(levelname)s - %(message)s'
+formatter = logging.Formatter(format)
+
+for v in [sh, fh]:
     v.setFormatter(formatter)
     logger.addHandler(v)
 
@@ -41,12 +45,19 @@ error = logger.error
 debug = logger.debug
 warning = logger.warning
 
-DEBUG = L.DEBUG
-INFO = L.INFO
-WARNING = L.WARNING
-ERROR = L.ERROR
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARNING = logging.WARNING
+ERROR = logging.ERROR
 
 def setLevel(level):
     logger.setLevel(level)
+
+def fileLevel(level):
+    '''
+    Which level should be save to a log file
+    Default is None
+    '''
+    fh.setLevel(level)
 
 # TODO: fix bug of this logging module later.
