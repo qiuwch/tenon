@@ -1,5 +1,5 @@
 import bpy
-import tenon.logging
+import tenon.logging as L
 import mathutils
 
 scene = bpy.data.scenes['Scene']
@@ -15,10 +15,11 @@ def get(name):
     '''
     Property of object including location, etc, more detail see the documentation of blender
     http://www.blender.org/api/blender_python_api_2_76_2/bpy.types.Object.html#bpy.types.Object
+    Common properties: location
     '''
     obj = bpy.data.objects.get(name)
     if not obj:
-        tenon.logging.warning('Object "%s" does not exist' % name)
+        L.warning('Object "%s" does not exist' % name)
 
     return obj
 
@@ -30,7 +31,7 @@ class Lamp:
         '''
         Create a lamp and return it, right now only support point light
         '''
-        tenon.logging.debug('Create a lamp called %s' % name)
+        L.debug('Create a lamp called %s' % name)
         obj = bpy.data.objects.get(name)
         # It seems tricky to modify the lamp name, which needs to modify lamp and obj name together
 

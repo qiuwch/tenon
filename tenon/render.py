@@ -1,10 +1,12 @@
 import bpy
 import tenon
+import tenon.logging as L
 
 def write(filename):
     tenon.obj.scene.render.filepath = filename
     tenon.obj.scene.update()
     bpy.ops.render.render(write_still=True)
+    L.debug('Write file to %s', filename)
 
 
 def writevideo(filename, format=''):
@@ -20,7 +22,7 @@ def writevideo(filename, format=''):
     bpy.ops.render.render(data_context, animation=True)
 
 class DepthMode:
-    @classmethod    
+    @classmethod
     def enable(cls):
         cls.setup()
         cls.tree.links.new(cls.renderLayersNode.outputs[2], cls.normalizeNode.inputs[0])
@@ -40,7 +42,7 @@ class DepthMode:
 
         renderLayersNode = tree.nodes.get('Render Layers')
         compositeNode = tree.nodes.get('Composite')
-        
+
         if not renderLayersNode or not compositeNode:
             tenon.logging.error('Error in setuping up depth mode, renderLayersNode and compositeNode are missing')
 
@@ -68,7 +70,7 @@ class PaintMode:
     @classmethod
     def enable(cls, obj):
         # cls.renderLayer.use_sky = False
-        ''' 
+        '''
         Enable paint mode for a specific object
         This won't take effect if no material is assigned
         '''
@@ -83,9 +85,9 @@ class PaintMode:
     @classmethod
     def disable(cls, obj):
         # cls.renderLayer.use_sky = cls.use_sky
-        ''' 
-        Disable Paint Mode, reverse previous operation 
-        '''  
+        '''
+        Disable Paint Mode, reverse previous operation
+        '''
         if obj:
             for slot in obj.material_slots:
                 cls._materialOff(slot.material)
@@ -99,7 +101,7 @@ class PaintMode:
             material.use_vertex_color_paint = True
 
             material.use_transparency = False
-            for i in range(len(material.use_textures)): 
+            for i in range(len(material.use_textures)):
                 material.use_textures[i] = False
 
     @classmethod
@@ -109,7 +111,7 @@ class PaintMode:
             material.use_vertex_color_paint = False
 
             material.use_transparency = True
-            for i in range(len(material.use_textures)): 
+            for i in range(len(material.use_textures)):
                 material.use_textures[i] = True
 
 
