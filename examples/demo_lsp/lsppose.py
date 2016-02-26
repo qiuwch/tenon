@@ -4,14 +4,17 @@ import sys; sys.path.append('/q/workspace/tenon/examples/');
 sys.path.append('/q/workspace/tenon/')
 import lsppose
 '''
-
 import tenon
 
 if tenon.inblender():
+    # The real work should only happen in blender
     import bpy, mathutils, os
     import tenon.logging as L
 
     class Models:
+        '''
+        Provide access to mesh data in the scene
+        '''
         def __init__(self):
             '''
             Find human model in the scene
@@ -53,51 +56,13 @@ if tenon.inblender():
         def hair(self):
             return tenon.obj.get('%s:mhair02' % self.modelName)
 
-
     models = Models()
-
-    def createConstraint():
-        '''
-        Create constraints to animate the human model
-        '''
-        Constraint.setup()
-
-
-    def animate(posefile):
-        '''
-        Animate the armature with a pose file
-        '''
-        # Make the retarget code here.
-        # Load data from exported csv file
-        loc = Retarget.readJointLocCSV(posefile)
-        if not loc:
-            return
-
-        # obj = Models.humanModel()
-        # root = obj.pose.bones['root'].head
-
-        bpy.ops.object.mode_set(mode='OBJECT')
-        jointNames = loc.keys()
-        # for i in range(len(jointNames)):
-        for jointName in jointNames:
-            # jointName = jointNames[i]
-            controlEmpty = bpy.data.objects.get(jointName)
-            if controlEmpty == None:
-                bpy.ops.object.empty_add()
-                controlEmpty = bpy.context.object
-                controlEmpty.name = jointName
-
-            pt = loc[jointName]
-            L.debug('Move %s to %s' % (jointName, str(pt)))
-
-            controlEmpty.location.x = pt.x
-            controlEmpty.location.y = pt.y
-            controlEmpty.location.z = pt.z
-
-        bpy.context.scene.update()  # This is super important
 
 
     class Retarget:
+        '''
+        Fit joint location data to armature
+        '''
         # Generate edit bones to show joint location
         bones = [ # I got these names from the poseprior dataset
             'back-bone', 'R-shldr', 'R-Uarm', 'R-Larm',
@@ -306,8 +271,10 @@ if tenon.inblender():
 
             return refArmature
 
-
     class Constraint:
+        '''
+        Utilities to setup constraints in the scene.
+        '''
         controlPointNames = ['root', 'neck', 'shoulder.l', 'elbow.l', 'wrist.l', 'shoulder.r'
             , 'elbow.r', 'wrist.r', 'headTop', 'hip.l', 'knee.l', 'ankle.l', 'foot.l'
             , 'hip.r', 'knee.r', 'ankle.r', 'foot.r', 'tail']
@@ -386,7 +353,6 @@ if tenon.inblender():
             ]
 
             cls.createControlPoint()
-
             for v in constraints:
                 c = Constraint()
                 c.boneName = v[0]
@@ -397,6 +363,9 @@ if tenon.inblender():
                 c.apply()
 
     class JointInfo:
+        '''
+        Utilitis to export joint information from the scene
+        '''
         @staticmethod
         def export():
             '''
@@ -469,3 +438,80 @@ if tenon.inblender():
                     int(scene.render.resolution_y * render_scale),
                     )
             return (round(co_2d.x * render_size[0]), round((1-co_2d.y) * render_size[1]))
+
+    class Util:
+        def __init__(self):
+            pass
+
+        def create_lamps(self):
+            # Setup lighting for the scene
+            radius = 12
+            nLight = 16
+            z = 10
+            lamps = [tenon.obj.Lamp.create('light%d' % v) for v in range(nLight)]
+            for i in range(len(lamps)):
+                lamp = lamps[i]
+
+                # Compute the location of light source, put the light evenly
+                lampObj = tenon.obj.get(lamp.name)
+                lampObj.location = tenon.util.sphere_location(radius, 360.0 / nLight * i, 0)
+                lampObj.location[2] += z  # Set the z of the light source
+
+            return lamps
+
+        def setup_scene(self):
+            # Create pose constraints
+            # The contraint point will be initially put on the 3D cursor
+            self.create_constraint()
+            lamps = self.create_lamps()
+            scene = tenon.util.dictwrapper(lamps = lamps)
+
+            return scene
+
+        def update_scene(self, scene, poseid):
+            import random
+            # Update human pose
+            self.animate(os.path.join(self.rootdir, 'data', '2015101415_v2/%04d.csv' % poseid))
+
+            # Randomly update lighting
+            for l in scene.lamps:
+                l.energy = random.gauss(1, 1.5)
+
+        def create_constraint(self):
+            '''
+            Create constraints to animate the human model
+            '''
+            Constraint.setup()
+
+        def animate(self, posefile):
+            '''
+            Animate the armature with a pose file
+            '''
+            # Make the retarget code here.
+            # Load data from exported csv file
+            loc = Retarget.readJointLocCSV(posefile)
+            if not loc:
+                return
+
+            # obj = Models.humanModel()
+            # root = obj.pose.bones['root'].head
+
+            bpy.ops.object.mode_set(mode='OBJECT')
+            jointNames = loc.keys()
+            # for i in range(len(jointNames)):
+            for jointName in jointNames:
+                # jointName = jointNames[i]
+                controlEmpty = bpy.data.objects.get(jointName)
+                if controlEmpty == None:
+                    bpy.ops.object.empty_add()
+                    controlEmpty = bpy.context.object
+                    controlEmpty.name = jointName
+
+                pt = loc[jointName]
+                L.debug('Move %s to %s' % (jointName, str(pt)))
+
+                controlEmpty.location.x = pt.x
+                controlEmpty.location.y = pt.y
+                controlEmpty.location.z = pt.z
+
+            bpy.context.scene.update()  # This is super important
