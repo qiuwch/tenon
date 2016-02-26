@@ -1,12 +1,13 @@
 import bpy
 import tenon
 import tenon.logging as L
+import tenon.util as U
 
 def write(filename):
     tenon.obj.scene.render.filepath = filename
     tenon.obj.scene.update()
     bpy.ops.render.render(write_still=True)
-    L.debug('Write file to %s', filename)
+    L.debug('Write file to %s', U.pretify_filename(filename))
 
 
 def writevideo(filename, format=''):
