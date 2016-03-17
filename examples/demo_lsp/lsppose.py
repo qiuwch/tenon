@@ -6,9 +6,13 @@ import lsppose
 '''
 import tenon
 import tenon.logging as L
-import os, glob
+import os, glob, ipdb
 
 class Cropper: # This may need to run outside of blender
+    def __init__(self):
+        self.joint_mapping = None
+        self.bgfiles = None
+
     def transform_matrix(self, depth):
         import numpy as np
         [y, x] = np.where(depth > 0)
@@ -37,7 +41,28 @@ class Cropper: # This may need to run outside of blender
         L.debug('Original transform matrix\n%s', matrix)
         return [crop_height, crop_width, matrix]
 
-    def crop_img(self, fullimg, depth, orig_coords):
+    def get_joint_mapping(self, labels):
+        import numpy as np
+        if self.joint_mapping == None:
+            LSP_order = [
+                'shin.fk.R.tail',      'thigh.fk.R.tail', 'thigh.fk.R.head',
+                'thigh.fk.L.head',     'thigh.fk.L.tail', 'shin.fk.L.tail',
+                'forearm.fk.R.tail',   'upper_arm.fk.R.tail', 'upper_arm.fk.R.head',
+                'upper_arm.fk.L.head', 'upper_arm.fk.L.tail', 'forearm.fk.L.tail',
+                'neck.head',           'head.tail'
+            ]
+
+            mapping = []
+            for v in LSP_order:
+                index = labels.index(v)
+                mapping.append(index)
+            L.debug('The label mapping is %s' % mapping)
+            self.joint_mapping = np.array(mapping)
+
+        # ipdb.set_trace()
+        return self.joint_mapping
+
+    def crop_img(self, fullimg, depth, orig_coords, orig_labels):
         import numpy as np
         import skimage.transform as T
         [crop_height, crop_width, mat] = self.transform_matrix(depth)
@@ -53,11 +78,26 @@ class Cropper: # This may need to run outside of blender
         L.debug('Transformed coords %s', cropped_coords)
         # T.matrix_transform() # Use this to tranform coordinate
 
-        index_mapping = np.array([6, 1, 3, 2, 0, 5, 8, 10, 12, 11, 9, 7, 13, 4])
-        lsp_cropped_coords = cropped_coords[index_mapping, :]
-        L.debug('Transformed LSP coords %s', lsp_cropped_coords)
+        index_mapping = self.get_joint_mapping(orig_labels)
+        # index_mapping = np.array([6, 1, 3, 2, 0, 5, 8, 10, 12, 11, 9, 7, 13, 4])
+        # The order for LSP dataset
+        # PC format
+        # The order is defined in here: http://www.comp.leeds.ac.uk/mat4saj/lsp.html
+        L.debug('Transformed labels %s', [orig_labels[v] for v in index_mapping])
+
+        resorted_cropped_coords = cropped_coords[index_mapping, :]
+        L.debug('Transformed LSP coords\n%s', resorted_cropped_coords)
         # L.debug('Transformed joint labels %s', [labels[i] for i in index_mapping])
-        return [cropped_img, cropped_coords]
+        return [cropped_img, resorted_cropped_coords]
+
+
+    def get_bgfiles(self):
+        bgfolder = os.path.expanduser('~/Dropbox/dataset/INRIA/')
+        L.info('Get background images from %s', bgfolder)
+        if self.bgfiles == None:
+            self.bgfiles = glob.glob(os.path.join(bgfolder, '*.jpg'))
+
+        return self.bgfiles
 
 
     def add_bg(self, nobgimg, bgid=None):
@@ -73,15 +113,13 @@ class Cropper: # This may need to run outside of blender
         if isinstance(nobgimg, str):
             nobgimg = skimage.io.imread(nobgimg)
 
-        bgfolder = os.path.expanduser('~/Dropbox/dataset/INRIA/')
-        L.info('Get background images from %s', bgfolder)
-        bgfiles = glob.glob(os.path.join(bgfolder, '*.jpg'))
 
         im = nobgimg
         alpha = im[:,:,3]
         im = im[:,:,0:3]
         [h, w, c] = im.shape
 
+        bgfiles = self.get_bgfiles()
         if bgid is None:
             bgid = random.randint(0, len(bgfiles)-1)
         bgfile = bgfiles[bgid]
@@ -629,7 +667,7 @@ if tenon.inblender():
 
         def render_scene(self, output_dir, filename_no_ext):
             imgfilename = os.path.join(output_dir, 'imgs/%s.png' % filename_no_ext)
-            L.info('Render file to %s', U.pretify_filename(imgfilename))
+            L.info('Render file to %s', L.prettify_filename(imgfilename))
             tenon.render.write(imgfilename)
 
             depth_filename = os.path.join(output_dir, 'depth/%s.png' % filename_no_ext)

@@ -12,12 +12,26 @@ import sys
 # No dependency on other modules, this is a core module and needs to be very stable
 # from tenon.util import timestamp, dictwrapper
 
-def timestamp():
+def prettify_filename(filename):
+    '''
+    Make the filename in the console clickable
+    '''
+    import os
+    from sys import platform as _platform
+    filename = os.path.expanduser(filename)
+    filename = os.path.abspath(filename)
+
+    if _platform == "linux" or _platform == "linux2":
+        filename = 'file://%s' % filename
+
+    return filename
+
+def time_stamp():
     import datetime
     n = datetime.datetime.now()
     return n.strftime('%Y%m%d-%H%M%S')
 
-default_log_file = 'tenon-%s.log' % timestamp()
+default_log_file = 'tenon-%s.log' % time_stamp()
 
 # Learn from logging cookbook
 logger = logging.getLogger('tenon')
@@ -60,4 +74,7 @@ def fileLevel(level):
     '''
     fh.setLevel(level)
 
+def isDebug():
+    return logger.level == logging.DEBUG
 # TODO: fix bug of this logging module later.
+
