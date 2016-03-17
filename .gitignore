@@ -13,3 +13,5 @@ __pycache__/
 # Backup file of blender scene
 *.blend1
 
+# This project will produce very large log file due the verbosity of blender and large batch size
+*.log
