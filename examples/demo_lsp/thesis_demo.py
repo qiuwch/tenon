@@ -39,7 +39,7 @@ def main():
         ]
 
     schedule_idx = range(1, 20001)
-    schedule_idx = [73]
+    schedule_idx = [73, 2]
     for i in schedule_idx:
         util.update_scene(scene, i)
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # Avoid execution during module import
     if not tenon.inblender():
         parser = argparse.ArgumentParser()
-        parser.add_argument('-f', '--blendfile', default = os.path.join(rootdir, 'data/mocap_demo_scene.blend'))
+        parser.add_argument('-f', '--blendfile', default = os.path.join(rootdir, 'data/fully_annotated.blend'))
 
         args = parser.parse_args()
         tenon.run(__file__, args.blendfile)

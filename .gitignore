@@ -15,3 +15,6 @@ __pycache__/
 
 # This project will produce very large log file due the verbosity of blender and large batch size
 *.log
+
+# Generated figures
+*.png

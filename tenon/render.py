@@ -78,11 +78,11 @@ class PaintMode:
         '''
         if obj:
             if len(obj.material_slots.items()) == 0:
-                tenon.logging.warning('No material is defined for object %s' % obj.name)
+                tenon.logging.warning('No material is defined for object: %s' % obj.name)
             for slot in obj.material_slots:
                 cls._materialOn(slot.material)
         else:
-            tenon.logging.warning('Object not exist')
+            tenon.logging.warning('Enable paint mode: Object not exist')
 
     @classmethod
     def disable(cls, obj):
@@ -94,7 +94,7 @@ class PaintMode:
             for slot in obj.material_slots:
                 cls._materialOff(slot.material)
         else:
-            tenon.logging.warning('Object not exist')
+            tenon.logging.warning('Disable paint mode: Object not exist')
 
     @classmethod
     def _materialOn(cls, material):
@@ -105,6 +105,8 @@ class PaintMode:
             material.use_transparency = False
             for i in range(len(material.use_textures)):
                 material.use_textures[i] = False
+        else:
+            L.warning('Material on: input material is None')
 
     @classmethod
     def _materialOff(cls, material):
