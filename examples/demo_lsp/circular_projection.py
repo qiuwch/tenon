@@ -1,6 +1,6 @@
-# Demo script to show how to use tenon
-# Define global variables
-
+'''
+Synthesize images around the center object
+'''
 import sys, os
 rootdir = os.path.expanduser('~/Dropbox/workspace/graphics_for_vision/tenon')
 tenonpath = os.path.join(rootdir, 'code/tenon')

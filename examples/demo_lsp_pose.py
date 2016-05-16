@@ -25,7 +25,7 @@ def main():
     L.setLevel(tenon.logging.INFO)
     L.info('Switch logging level to INFO')
     L.info('Write a test image to init.png')
-    tenon.render.write('init.png')
+    tenon.render.write('lsp/init.png')
 
     camera = tenon.obj.get('Camera') # Unused in this demo
     scene = util.setup_scene()

@@ -1,3 +1,4 @@
+# Convert from full size image to cropped humans
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -52,4 +53,3 @@ if __name__ == '__main__':
 
     for i in range(1, 10):
         crop_file(i)
-
