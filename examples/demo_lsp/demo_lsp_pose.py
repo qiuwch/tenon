@@ -2,29 +2,26 @@
 
 # Define global variables
 import sys, os
-pwd = os.getcwd()
-rootdir = os.path.join(pwd, '../../..') # This folder is /examples/demo_lsp/
-tenonpath = os.path.join(rootdir, 'code')
-outputdir = os.path.join(rootdir, 'cache/lsp_synthesized')
-print(tenonpath)
-sys.path.append(os.path.expanduser(tenonpath))
 
+# Define the paths where python can find tenon and lsppose
+paths = [os.path.abspath('../..'), os.path.abspath('.')]
+[sys.path.append(p) for p in paths]
 import tenon
-sys.path.append(pwd)
 import lsppose
 
 import argparse
 
 def main():
+    outputdir = './images'
     util = lsppose.Util()
     models = lsppose.Models()
     util.rootdir = rootdir
 
     import tenon.logging as L
-    # outputdir = '//../cache/lsp_synthesized'
     L.setLevel(tenon.logging.INFO)
     L.info('Switch logging level to INFO')
     tenon.render.write('init.png')
+    return
 
     camera = tenon.obj.get('Camera') # Unused in this demo
     scene = util.setup_scene()
@@ -71,7 +68,7 @@ if __name__ == '__main__':
     # Avoid execution during module import
     if not tenon.inblender():
         parser = argparse.ArgumentParser()
-        parser.add_argument('-f', '--blendfile', default = os.path.join(rootdir, 'data/mocap_demo_scene.blend'))
+        parser.add_argument('-f', '--blendfile', default = os.path.join('../data/mocap_demo_scene.blend'))
 
         args = parser.parse_args()
         tenon.run(__file__, args.blendfile)
