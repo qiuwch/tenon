@@ -1,0 +1,15 @@
+Project tenon is a set of python scripts to automatically control blender rendering.
+
+`demo.blend` is a simple scene with only a monkey head.
+`demo.py` will render a bunch of images to data folder
+
+The output of blender will be written to `blender_stdout.log`
+
+
+Demo script to show how to use tenon
+1. headless mode for rendering
+2. interactive in blender shell
+
+
+# Render synthetic human images
+`examples/`
