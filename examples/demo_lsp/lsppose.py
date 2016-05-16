@@ -1,4 +1,5 @@
 '''
+Define a set of functions to read lsp 2D ground truth annotation
 Demo code for interactive shell
 import sys; sys.path.append('/q/workspace/tenon/examples/');
 sys.path.append('/q/workspace/tenon/')
@@ -492,10 +493,11 @@ if tenon.inblender():
 
             return scene
 
-        def update_scene(self, scene, poseid):
+        def update_scene(self, posefolder, scene, poseid):
             import random
             # Update human pose
-            self.animate(os.path.join(self.rootdir, 'data', '2015101415_v2/%04d.csv' % poseid))
+            # self.animate(os.path.join(self.rootdir, 'data', '2015101415_v2/%04d.csv' % poseid))
+            self.animate(os.path.join(posefolder, '%04d.csv' % poseid))
 
             # Randomly update lighting
             for l in scene.lamps:
@@ -558,4 +560,3 @@ if tenon.inblender():
             joint_filename = os.path.join(output_dir, 'joints/%s.csv' % filename_no_ext)
             joints = JointInfo.export()
             JointInfo.serializeJointInfo(joint_filename, joints)
-
