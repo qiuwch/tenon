@@ -15,13 +15,13 @@ def main():
     # check demo.blend to get the camera name
     for i in range(10):
         camera.location.x += 1
-        L.info(camera.location)
-        figname = 'data/demo/%04d.png' % i
+        # L.info(camera.location)
+        figname = './data/demo/%04d.png' % i
         tenon.render.write(figname)
         # TODO: Generate html doc from source code
         L.info('Write to %s successful' % figname)
 
 if not tenon.inblender():
-    tenon.run(__file__, 'demo.blend')
+    tenon.run(__file__, './data/simple_demo.blend')
 else:
     main()
