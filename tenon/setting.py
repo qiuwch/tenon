@@ -4,6 +4,9 @@
 import sys, os
 sys.path.append(os.path.expanduser('~'))
 
-blender = '/Applications/blender.app/Contents/MacOS/blender'
+blender = 'blender'
 
-from local_settings import *
+try:
+    from local_settings import *
+except:
+    pass
