@@ -1,60 +1,51 @@
-import logging
-import time
+import tenon.logging as L
+import tenon.obj
 import os
 
-def shorttimestamp():
-    timeStamp = time.strftime('%m%d', time.localtime())
-    return timeStamp
+def timestamp():
+    import datetime
+    n = datetime.datetime.now()
+    return n.strftime('%Y%m%d-%H%M%S')
 
-def longtimestamp():
-    timeStamp = time.strftime('%m%d%H%M', time.localtime())
-    return timeStamp
+class dictwrapper:
+    def __init__(self, **kwargs):
+        d = dict(**kwargs)
+        self.__dict__.update(d)
 
-def startlogging(logfile, level=logging.DEBUG):
-    # The config may be already set by other module, so this would not take effect
-    # without removing exsiting handlers
+if tenon.inblender():
+    def sphere_location(radius, az, el):
+        '''
+        The input of az, el should be angle, not radius
+        The visualization of az/el is in
+        https://en.wikipedia.org/wiki/Horizontal_coordinate_system
+        '''
+        import math
+        az = math.radians(az)
+        el = math.radians(el)
+        z = radius * math.sin(el)
+        r = radius * math.cos(el)
+        x = r * math.cos(az)
+        y = r * math.sin(az)
+        return [x, y, z]
 
-    # Check the log folder, make sure it is writable
-    logfolder = os.path.dirname(logfile)
-    if not os.path.isdir(logfolder):
-        os.mkdir(logfolder)
+    def get_obj(obj):
+        if isinstance(obj, str):
+            return tenon.obj.get(obj)
+        else:
+            return obj
 
-    for handler in logging.root.handlers[:]: # Reset the existing config
-        logging.root.removeHandler(handler)
+    def camera_track(camera, target, subtarget=None):
+        # Track_to constraint
+        camera = get_obj(camera)
+        target = get_obj(target)
+        if camera == None or target == None:
+            L.error('Fail to setup camera tracking.\nCamera %s and target %s invalid', camera, target)
+            return
 
-    logging.basicConfig(filename=logfile,level=logging.DEBUG) 
-    logging.info('test message')
+        c = camera.constraints.new('TRACK_TO')
+        c.target = target
+        c.track_axis = 'TRACK_NEGATIVE_Z'
+        c.up_axis = 'UP_Y'
 
-class Timer(object):
-    def __init__(self, name=None):
-        self.name = name
-
-    def __enter__(self):
-        self.tstart = time.time()
-
-    def __exit__(self, type, value, traceback):
-        if self.name:
-            print('[%s]' % self.name)
-        print('Elapsed: %s' % (time.time() - self.tstart))
-
-class ProgressBar:
-    def __init__(self, n, percent=0.05):
-        if n == 0:
-            print('ProgressBar initialization, n = 0, unexpected case')
-        self.n = n
-        self.last = 0
-        self.percent = percent
-
-    def update(self, i):
-        if i == 0:
-            print('%d/%d, 0 per, Start... ' % (i, self.n))
-
-
-        new = float(i) / self.n
-        if new - self.last > self.percent:
-            print('%d/%d, %.2f per' % (i, self.n, new))
-            self.last = new
-
-        if i == (self.n - 1):
-            print('%d/%d, 100 per, Finish... ' % (i, self.n))
+        L.debug('Camera %s is setup to track obj %s and subtarget %s', camera, target, subtarget)
 

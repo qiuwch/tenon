@@ -1,3 +1,7 @@
+refactor/
+
+# Ignore related data
+
 *~
 .DS_Store
 *.pyc
@@ -9,8 +13,8 @@ __pycache__/
 # Backup file of blender scene
 *.blend1
 
-# Ignore large chunk of data files
-scenes/motions/
-scenes/textures/
-scenes/background/
+# This project will produce very large log file due the verbosity of blender and large batch size
+*.log
 
+# Generated figures
+*.png
