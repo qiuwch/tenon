@@ -1,9 +1,10 @@
-# Demo script to show how to use tenon
-# Use tenon
-# 1. headless mode for rendering
-# 2. interactive in blender shell
+'''
+This script will render a few images with different camera positions for a very simple scene.
+'''
 import sys, os
-sys.path.append(os.path.expanduser('~/Dropbox/workspace/tenon/code'))
+
+# To use this library, need to append the absolute path of this folder
+sys.path.append(os.getcwd())
 import tenon
 
 def main():
@@ -11,18 +12,16 @@ def main():
     import bpy
 
     camera = tenon.obj.get('Camera')
-    # none_exist_obj = tenon.obj.get('none_exist')
-    print(camera.location)
+    # check demo.blend to get the camera name
     for i in range(10):
         camera.location.x += 1
-        figname = '../cache/fig/demo%d.png' % i
+        L.info(camera.location)
+        figname = 'data/demo/%04d.png' % i
         tenon.render.write(figname)
+        # TODO: Generate html doc from source code
         L.info('Write to %s successful' % figname)
-    # objs = dict(camera='Camera')
 
 if not tenon.inblender():
     tenon.run(__file__, 'demo.blend')
 else:
     main()
-
-# Define a scene first, then apply scene spefic operation.
