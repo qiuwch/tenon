@@ -20,7 +20,7 @@ def main():
     # tenon.constraint.TrackConstraint()
 
     # Track_to constraint
-    U.camera_track(camera, 'Suzanne') # Setup camera tracking constraint
+    U.camera_track(camera, target) # Setup camera tracking constraint
 
     # Set up the light configuration
     for count in range(10):

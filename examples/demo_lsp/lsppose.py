@@ -42,7 +42,7 @@ if tenon.inblender():
 
             if len(modelNames) != 1:
                 L.error('%d is invalid number of human models' % len(modelNames))
-                return ''
+                return
 
             self.modelName = modelNames[0]
 

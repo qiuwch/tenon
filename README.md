@@ -23,3 +23,11 @@ python ./demo_lsp_pose.py
 ```
 
 Rendered images will be saved to examples/lsp
+
+# Example: Use tenon in the python console of blender
+```python
+tenonpath = '/home/qiuwch/workspace/tenon-pipeline/tenon'
+import os, sys
+paths = [tenonpath, os.path.join(tenonpath, 'examples/demo_lsp')]
+[sys.path.append(p) for p in paths]
+```
